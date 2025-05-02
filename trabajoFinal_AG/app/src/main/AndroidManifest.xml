@@ -8,9 +8,7 @@
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
-    <uses-permission
-        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
-        android:targetSdkVersion="31" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -25,19 +23,13 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".Edit_profile"
+            android:exported="false" />
+        <activity
             android:name=".RegisterActivity"
             android:exported="false" />
         <activity
-            android:name=".ProfileActivity"
-            android:exported="false" />
-        <activity
-            android:name=".GenerateClipsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".HistoryActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity"
+            android:name=".LogInActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,6 +37,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".GenerateClipsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DownloadActivity"
+            android:exported="false"></activity>
 
         <meta-data
             android:name="preloaded_fonts"

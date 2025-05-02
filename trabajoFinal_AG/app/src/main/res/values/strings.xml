@@ -1,8 +1,9 @@
 <resources>
-    <string name="app_name" translatable="false">trabajoFinal_AG</string>
+    <string name="app_name" translatable="false">ClipExtractor</string>
     <string name="placeHolderHelper">Introduzca la url del video</string>
     <string name="descargar"> Descargar</string>
     <string name="iniciar_sesion">Iniciar sesion</string>
+    <string name="registrarse">Registrarse</string>
     <string name="error_url_empty">La url no puede estar vacía</string>
     <string name="error_url_invalid">Url invalida</string>
     <string name="bttn_historial">Ver historial</string>

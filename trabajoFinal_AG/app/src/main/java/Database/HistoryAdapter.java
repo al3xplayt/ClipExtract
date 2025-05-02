@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.trabajofinal_ag.MainActivity;
+import com.example.trabajofinal_ag.DownloadActivity;
 import com.example.trabajofinal_ag.R;
 import java.util.List;
 
@@ -38,7 +38,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
 
         // Configurar el botón de descarga
         holder.downloadButton.setOnClickListener(v -> {
-            Intent intent = new Intent(context, MainActivity.class);
+            Intent intent = new Intent(context, DownloadActivity.class);
             Bundle bundle = new Bundle();
             bundle.putString("url", history.getUrl());
             bundle.putString("format", history.getFormat());

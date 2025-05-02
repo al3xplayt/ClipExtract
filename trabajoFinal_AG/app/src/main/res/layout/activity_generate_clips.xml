@@ -63,6 +63,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="86dp"
         android:layout_marginBottom="250dp"
+        android:backgroundTint="@color/primaryColor"
         android:text="Extraer Clip"
         app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent"

@@ -1,10 +1,6 @@
 package com.example.trabajofinal_ag;
 
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -51,7 +47,7 @@ public class HistoryActivity extends AppCompatActivity {
         back = findViewById(R.id.myImageButton);
         deleteHistoryButton = findViewById(R.id.ic_delete);
         // Obtener los datos del historial desde la base de datos
-        downloadHistoryList = MainActivity.getDatabase().downloadHistoryDao().getAllHistory();
+        downloadHistoryList = DownloadActivity.getDatabase().downloadHistoryDao().getAllHistory();
 
         // Configurar el adaptador con los datos
         adapter = new HistoryAdapter(downloadHistoryList, this);
@@ -59,7 +55,7 @@ public class HistoryActivity extends AppCompatActivity {
 
         // Configurar el botón de "Atrás"
         back.setOnClickListener(v -> {
-            Intent intent = new Intent(HistoryActivity.this, MainActivity.class);
+            Intent intent = new Intent(HistoryActivity.this, DownloadActivity.class);
             startActivity(intent);
         });
         deleteHistoryButton.setOnClickListener(v -> deleteHistory());
@@ -68,7 +64,7 @@ public class HistoryActivity extends AppCompatActivity {
     // Método para borrar el historial
     private void deleteHistory() {
         // Borrar todos los registros del historial desde la base de datos
-        MainActivity.getDatabase().downloadHistoryDao().deleteAllHistory();
+        DownloadActivity.getDatabase().downloadHistoryDao().deleteAllHistory();
 
         // Actualizar la lista en la interfaz
         downloadHistoryList.clear();

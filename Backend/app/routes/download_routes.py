@@ -1,0 +1,49 @@
+from flask import Blueprint, request, jsonify, send_file
+from pathlib import Path
+from app.services.download_service import download_video
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from app.services.download_service import schedule_delete
+
+
+download_bp = Blueprint('download', __name__)
+
+@download_bp.route('/download', methods=['POST'])
+def download_page():
+    if request.method == 'POST':
+        data = request.get_json()  # Obtener los datos JSON
+        url = data.get('url')
+        formato = data.get('format')  # "mp3" o "mp4"
+        formato = formato.lower()
+        if not url:
+            return "No se proporcionó un enlace válido", 400
+
+        try:
+            file_path = download_video(url, formato)
+            print(file_path)
+            if file_path and os.path.exists(file_path):
+                file = Path("data/temp_files") / os.path.basename(file_path)
+                filename = os.path.basename(file_path)  # Nombre del archivo descargado
+
+                return send_file(file, as_attachment=True, download_name=filename, mimetype='audio/mpeg')
+            else:
+                return "No se pudo procesar el archivo.", 500
+        except Exception as e:
+            return str(e), 500
+
+@download_bp.route('/delete_file', methods=['POST'])
+def delete():
+    data = request.get_json()
+    print("aaaaaaa")
+    file_name = data.get('file_name')
+    print(f"Recibido para eliminar: {file_name}")
+    if not file_name:
+        print("No se proporcionó nombre de archivo")
+        return jsonify({"error": "No se proporcionó nombre de archivo"}), 400
+    print(f"Programando eliminación de: {file_name}")
+    schedule_delete(file_name)
+    return jsonify({"message": f"Archivo '{file_name}' programado para eliminación"}), 200
+
+    

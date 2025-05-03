@@ -79,8 +79,8 @@ def delete_user_history(username):
     user = db.query(Usuario).filter(Usuario.user == username).first()
     if not user:
         return jsonify({"success": False, "message": "Usuario no encontrado"}), 404
-
-    db.query(DownloadHistory).filter(DownloadHistory.user_id == user.id).delete()
+    user_id = db.query(Usuario).filter(Usuario.user == username).first().id
+    db.query(DownloadHistory).filter(DownloadHistory.usuario_id == user_id).delete()
     db.commit()
     return jsonify({"success": True, "message": "Historial eliminado"}), 200
 

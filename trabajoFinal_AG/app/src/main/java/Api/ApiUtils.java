@@ -139,7 +139,7 @@ public class ApiUtils {
     // ELIMINAR HISTORIAL DE DESCARGAS
     // -----------------------------
     public static void deleteDownloadHistory(String username, ApiCallback callback) {
-        String url = BASE_URL + "history/" + username;
+        String url = BASE_URL + "history/" + username + "/delete";
 
         Request request = new Request.Builder()
                 .url(url)

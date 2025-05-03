@@ -107,6 +107,7 @@ public class HistoryActivity extends AppCompatActivity {
                     );
                 }
             });
+            deleteHistoryButton.setOnClickListener(v -> deleteHistoryApi(userName));
         }
         // Configurar el botón de "Atrás"
         back.setOnClickListener(v -> {
@@ -127,8 +128,35 @@ public class HistoryActivity extends AppCompatActivity {
         // Mostrar un mensaje al usuario
         Toast.makeText(this, this.getText(R.string.deleteHistory), Toast.LENGTH_SHORT).show();
     }
+    private void deleteHistoryApi(String username) {
+        ApiUtils.deleteDownloadHistory(username, new ApiCallback() {
+            @Override
+            public void onSuccess(JSONObject response) {
+                runOnUiThread(() -> {
+                    try {
+                        boolean success = response.getBoolean("success");
+                        String message = response.getString("message");
+
+                        if (success) {
+                            Toast.makeText(HistoryActivity.this, message, Toast.LENGTH_SHORT).show();
+                            downloadHistoryList.clear();
+                            adapter.notifyDataSetChanged();
+                        } else {
+                            Toast.makeText(HistoryActivity.this, message, Toast.LENGTH_SHORT).show();
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                runOnUiThread(() -> {
+                    Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
+    }
 }
-
-
-
-

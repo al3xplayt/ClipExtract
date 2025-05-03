@@ -2,6 +2,7 @@ package com.example.trabajofinal_ag;
 import static android.os.Environment.getExternalStoragePublicDirectory;
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,6 +20,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.room.Room;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import org.json.JSONObject;
+
 import java.util.Date;
 import java.util.Locale;
 import java.text.SimpleDateFormat;
@@ -26,6 +30,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
+import Api.ApiCallback;
+import Api.ApiUtils;
 import Database.AppDatabase;
 import Database.DownloadHistory;
 import okhttp3.*;
@@ -41,6 +48,7 @@ public class DownloadActivity extends AppCompatActivity {
     private static final int REQUEST_WRITE_STORAGE_PERMISSION = 1;
     private static AppDatabase db;
 
+    private static final String API_URL = "http://192.168.1.14:50010/";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,7 +66,7 @@ public class DownloadActivity extends AppCompatActivity {
             String url = bundle.getString("url");
             String format = bundle.getString("format");
             startDownload(url, format);
-            Toast.makeText(this, "Descargando: " + url + " en formato " + format, Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Descargando: " + url + " en formato " + format, Toast.LENGTH_SHORT).show();
         }
         db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "download_database")
                 .allowMainThreadQueries()  // Permite hacer consultas en el hilo principal (para pruebas, en producción es mejor hacerlas en segundo plano)
@@ -81,6 +89,8 @@ public class DownloadActivity extends AppCompatActivity {
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE_PERMISSION);
             }
         }
+        SharedPreferences prefs = getSharedPreferences("user_data", MODE_PRIVATE);
+        String userName = prefs.getString("user_name", null);
 
         // Acción del botón de descarga
         download.setOnClickListener(v -> {
@@ -98,6 +108,7 @@ public class DownloadActivity extends AppCompatActivity {
                 String selectedFormat = formatSpinner.getSelectedItem().toString().toLowerCase();
                 // Enviar la URL y el formato al servidor Flask para la descarga
                 startDownload(urlText, selectedFormat);
+
             }
         });
 
@@ -133,7 +144,7 @@ public class DownloadActivity extends AppCompatActivity {
 
         // Crear la solicitud POST
         Request request = new Request.Builder()
-                .url("http://192.168.1.14:5010/")  // Asegúrate de que Flask esté escuchando en esta ruta
+                .url(API_URL + "download")  // Asegúrate de que Flask esté escuchando en esta ruta
                 .post(body)
                 .build();
 
@@ -172,12 +183,53 @@ public class DownloadActivity extends AppCompatActivity {
                     // Notificar al usuario sobre la descarga
                     String finalFileName = fileName;
                     runOnUiThread(() -> Toast.makeText(DownloadActivity.this, "Archivo guardado en descargas", Toast.LENGTH_SHORT).show());
-                    System.out.println("Archivo descargado en: " + downloadsDir);
-                    String currentDate = getCurrentDate();
-                    saveDownloadHistory(finalFileName, format.toUpperCase(), currentDate, urlText);
+                    SharedPreferences prefs = getSharedPreferences("user_data", MODE_PRIVATE);
+                    String userName = prefs.getString("user_name", "null");
 
+                    if (userName.equals("null")) {
+                        runOnUiThread(() -> Toast.makeText(DownloadActivity.this, "El usuario es " + userName, Toast.LENGTH_SHORT).show());
+                        String currentDate = getCurrentDate();
+                        saveDownloadHistory(finalFileName, format.toUpperCase(), currentDate, urlText);
+                        notifyServerFileDownloaded(finalFileName);
+                        return;
+                    } else {
+                        runOnUiThread(() -> Toast.makeText(DownloadActivity.this, "El usuario es " + userName, Toast.LENGTH_SHORT).show());
+                    }
+
+                    ApiUtils.registerDownload(userName, urlText, finalFileName, format, new ApiCallback() {
+                        @Override
+                        public void onSuccess(JSONObject response) {
+                            runOnUiThread(() -> {
+                                try {
+                                    boolean success = response.getBoolean("success");
+                                    String message = response.getString("message");
+
+                                    if (success) {
+                                        Toast.makeText(DownloadActivity.this, message, Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(DownloadActivity.this, "Se esta registrando desde la api", Toast.LENGTH_SHORT).show();
+                                        Intent intent = new Intent(DownloadActivity.this, DownloadActivity.class);
+                                        notifyServerFileDownloaded(finalFileName);
+                                        startActivity(intent);
+                                        finish();
+                                    } else {
+                                        Toast.makeText(DownloadActivity.this, message, Toast.LENGTH_SHORT).show();
+                                    }
+
+                                } catch (Exception e) {
+                                    Toast.makeText(DownloadActivity.this, "Error al procesar respuesta", Toast.LENGTH_SHORT).show();
+                                    e.printStackTrace();
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            runOnUiThread(() -> {
+                                Toast.makeText(DownloadActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    });
                     // Notificar al servidor que la descarga ha terminado
-                    notifyServerFileDownloaded(finalFileName);
 
                 } else {
                     runOnUiThread(() -> Toast.makeText(DownloadActivity.this, "Error en la descarga", Toast.LENGTH_SHORT).show());
@@ -195,7 +247,7 @@ public class DownloadActivity extends AppCompatActivity {
 
         // Crear la solicitud POST
         Request request = new Request.Builder()
-                .url("http://192.168.1.14:5010/delete_file")  // La URL del servidor Flask para eliminar archivos
+                .url(API_URL + "delete_file")  // La URL del servidor Flask para eliminar archivos
                 .post(body)
                 .build();
 
@@ -242,10 +294,11 @@ public class DownloadActivity extends AppCompatActivity {
             // Insertar el historial en la base de datos
             this.getDatabase().downloadHistoryDao().insert(downloadHistory);
             runOnUiThread(() -> {
-                Toast.makeText(DownloadActivity.this, "Descarga guardada en historial", Toast.LENGTH_LONG).show();
+                Toast.makeText(DownloadActivity.this, "Descarga guardada en historial local", Toast.LENGTH_LONG).show();
             });
         });
     }
+
 
     private String getCurrentDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());

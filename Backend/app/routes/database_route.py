@@ -1,26 +1,83 @@
 # main.py
 from flask import Blueprint, request, jsonify
 from app.database import SessionLocal
-from app.services.database_services import crear_usuario, verificar_usuario
+from app.services.database_services import *
 
 database_bp = Blueprint('database', __name__)
+
 @database_bp.route("/registro", methods=["POST"])
 def registro():
     data = request.json
     db = SessionLocal()
-    usuario = crear_usuario(db, data["nombre"], data["email"], data["contrasena"])
+    usuario = crear_usuario(db, data["nombre"], data["surname"], data["email"], data["contrasena"], data["username"])
     db.close()
+    error = usuario.get("error")
+    print(f"usuario: {usuario}")
+    print(error)
     if not usuario:
-        return jsonify({"mensaje": "Usuario ya registrado"}), 409
-    return jsonify({"mensaje": "Usuario creado"}), 201
+        return jsonify({"success": False}), 409  # Conflicto, ya registrado
+    if error:
+        return jsonify({"success": False, "message": error}), 409
+    return jsonify({"success": True}), 201  # Creado correctamente
 
-# Endpoint para login
 @database_bp.route("/login", methods=["POST"])
 def login():
     data = request.json
     db = SessionLocal()
-    usuario = verificar_usuario(db, data["email"], data["contrasena"])
+    resultado = verificar_usuario(db, data["email"], data["contrasena"], data["username"])
     db.close()
-    if not usuario:
-        return jsonify({"mensaje": "Credenciales incorrectas"}), 401
-    return jsonify({"mensaje": "Inicio de sesión exitoso", "usuario": usuario.email}), 200
+
+    if not resultado["success"]:
+        print(resultado["message"])
+        return jsonify({"success": False, "message": resultado["message"]}), 401
+
+    return jsonify({
+        "success": True,
+        "message": resultado["message"],
+        "user_name": resultado["usuario"].user
+    }), 200
+
+@database_bp.route("/register_download", methods=["POST"])
+def upload_download():
+    data = request.json
+    db = SessionLocal()
+    resultado = subir_descarga(db, data["url"],  data["filename"], data["username"], data["formato"])
+    db.close()
+
+    if not resultado["success"]:
+        print(f"Usuario {data['username']}")
+        print(data["url"])
+        print(resultado["error"])
+        print("_"*20)
+        return jsonify({"success": False, "message": resultado["error"]}), 404
+
+    return jsonify({"success": True, "message": resultado["message"]}), 200
+
+@database_bp.route("/history/<username>", methods=["GET"])
+def get_user_history(username):
+    db = SessionLocal()
+    user = db.query(Usuario).filter(Usuario.user == username).first()
+    if not user:
+        return jsonify({"success": False, "message": "Usuario no encontrado"}), 404
+
+    history = db.query(DownloadHistory).filter(DownloadHistory.user_id == user.id).all()
+    result = [
+        {
+            "video_url": h.video_url,
+            "filename": h.filename,
+            "formato": h.formato
+        } for h in history
+    ]
+    return jsonify({"success": True, "history": result}), 200
+
+@database_bp.route("/history/<username>", methods=["DELETE"])
+def delete_user_history(username):
+    db = SessionLocal()
+    user = db.query(Usuario).filter(Usuario.user == username).first()
+    if not user:
+        return jsonify({"success": False, "message": "Usuario no encontrado"}), 404
+
+    db.query(DownloadHistory).filter(DownloadHistory.user_id == user.id).delete()
+    db.commit()
+    return jsonify({"success": True, "message": "Historial eliminado"}), 200
+

@@ -1,9 +1,9 @@
-import os
+import os, threading
 from pathlib import Path
 import yt_dlp
 import ffmpeg
 
-TEMP_DIR = 'Backend/data/temp_audio'
+TEMP_DIR = 'Backend/data/temp_files'
 os.makedirs(TEMP_DIR, exist_ok=True)
 
 def download_video(url, formato):
@@ -55,3 +55,14 @@ def download_video(url, formato):
 
     except Exception as e:
         raise e
+
+
+TEMP_DIR = 'Backend/data/temp_files'
+
+def schedule_delete(file_name):
+    file_path = os.path.join(TEMP_DIR, file_name)
+    print(f"Programando eliminación de: {file_path}")
+    if os.path.exists(file_path):
+        threading.Timer(1, os.remove, args=[file_path]).start()
+        return True
+    return False

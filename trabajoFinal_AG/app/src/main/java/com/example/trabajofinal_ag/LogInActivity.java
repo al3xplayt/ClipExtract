@@ -1,6 +1,7 @@
 package com.example.trabajofinal_ag;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.widget.Button;
@@ -15,10 +16,15 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import org.json.JSONObject;
+
+import Api.ApiCallback;
+import Api.ApiUtils;
+
 public class LogInActivity extends AppCompatActivity {
     private EditText etEmail, etPassword;
     private ImageView toggle;
-
+    TextView registrarse, invitado;
     private Button btnLogin;
 
     @Override
@@ -36,14 +42,26 @@ public class LogInActivity extends AppCompatActivity {
         // Inicializar vistas
         etEmail = findViewById(R.id.email);
         etPassword = findViewById(R.id.etPassword);
+
         toggle = findViewById(R.id.showPasswordToggle);
         btnLogin = findViewById(R.id.iniciar_sesion);
-        TextView registrarse = findViewById(R.id.registrarse);
+        registrarse = findViewById(R.id.registrarse);
 
         // Acciones
         registrarse.setOnClickListener(v -> {
             Intent intent = new Intent(LogInActivity.this, RegisterActivity.class);
             startActivity(intent);
+        });
+
+        invitado = findViewById(R.id.invitado);
+        invitado.setOnClickListener(v -> {
+            Intent intent = new Intent(LogInActivity.this, DownloadActivity.class);
+            SharedPreferences prefs = getSharedPreferences("user_data", MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("user_name", "null");
+            editor.apply();
+            startActivity(intent);
+            finish();
         });
 
         toggle.setOnClickListener(v -> {
@@ -68,13 +86,51 @@ public class LogInActivity extends AppCompatActivity {
     private void validarCampos() {
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
-
-        if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, R.string.error_no_values, Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Bienvenido", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(LogInActivity.this, DownloadActivity.class);
-            startActivity(intent);
+        String username = etEmail.getText().toString().trim();
+        if ((email.isEmpty() || username.isEmpty()) || password.isEmpty()) {
+            Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        ApiUtils.loginUser(email, password, username, new ApiCallback() {
+
+            @Override
+            public void onSuccess(JSONObject response) {
+                runOnUiThread(() -> {
+                    try {
+                        boolean success = response.getBoolean("success");
+                        String message = response.getString("message");
+
+                        if (success) {
+                            Toast.makeText(LogInActivity.this, message, Toast.LENGTH_SHORT).show();
+
+                            String userName = response.getString("user_name");
+                            SharedPreferences prefs = getSharedPreferences("user_data", MODE_PRIVATE);
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putString("user_name", userName);
+                            editor.apply();
+
+                            Intent intent = new Intent(LogInActivity.this, DownloadActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Toast.makeText(LogInActivity.this, message, Toast.LENGTH_SHORT).show();
+                        }
+
+                    } catch (Exception e) {
+                        Toast.makeText(LogInActivity.this, "Error al procesar respuesta", Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                runOnUiThread(() -> {
+                    Toast.makeText(LogInActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
     }
 }
+

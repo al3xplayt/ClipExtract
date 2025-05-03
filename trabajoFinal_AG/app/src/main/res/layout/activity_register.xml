@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -8,44 +7,88 @@
     android:layout_height="match_parent"
     tools:context=".RegisterActivity">
 
-    <EditText
-        android:id="@+id/etName"
-        android:layout_width="385dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="184dp"
-        android:hint="Nombre completo"
-        android:inputType="textPersonName"
+    <TextView
+        android:id="@+id/clipExtractor_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="89dp"
+        android:layout_marginTop="44dp"
+        android:layout_marginEnd="88dp"
+        android:fontFamily="serif"
+        android:text="ClipExtractor"
+        android:textSize="34sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.461"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
+        android:id="@+id/etName"
+        android:layout_width="315dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="21dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="75dp"
+        android:hint="Nombre completo"
+        android:inputType="textPersonName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/clipExtractor_txt" />
+
+    <EditText
+        android:id="@+id/etApellidos"
+        android:layout_width="315dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="19dp"
+        android:layout_marginEnd="80dp"
+        android:hint="Apellidos"
+        android:inputType="textPersonName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etName" />
+
+    <EditText
         android:id="@+id/etEmail"
-        android:layout_width="391dp"
-        android:layout_height="41dp"
-        android:layout_marginTop="16dp"
+        android:layout_width="315dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="80dp"
         android:hint="Correo electrónico"
         android:inputType="textEmailAddress"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etName" />
+        app:layout_constraintTop_toBottomOf="@+id/etApellidos" />
+
+    <EditText
+        android:id="@+id/etUsuario"
+        android:layout_width="315dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="22dp"
+        android:layout_marginEnd="80dp"
+        android:hint="user"
+        android:inputType="textEmailAddress"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etEmail" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/passwordContainer"
-        android:layout_width="362dp"
-        android:layout_height="63dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="32dp"
+        android:layout_width="365dp"
+        android:layout_height="65dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="30dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etEmail">
+        app:layout_constraintTop_toBottomOf="@+id/etUsuario">
 
         <EditText
             android:id="@+id/etPassword"
-            android:layout_width="293dp"
-            android:layout_height="47dp"
+            android:layout_width="315dp"
+            android:layout_height="60dp"
             android:layout_marginEnd="48dp"
             android:backgroundTint="@android:color/black"
             android:hint="Password"
@@ -61,8 +104,8 @@
 
         <ImageView
             android:id="@+id/showPasswordToggle"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="36dp"
+            android:layout_height="34dp"
             android:layout_marginEnd="8dp"
             android:contentDescription="Mostrar contraseña"
             android:src="@drawable/ic_eye_off"
@@ -73,12 +116,16 @@
 
     <Button
         android:id="@+id/btnRegister"
-        android:layout_width="147dp"
-        android:layout_height="43dp"
-        android:layout_marginTop="58dp"
+        android:layout_width="153dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="128dp"
+        android:layout_marginEnd="136dp"
+        android:layout_marginBottom="124dp"
         android:backgroundTint="@color/primaryColor"
         android:text="@string/registrarse"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/passwordContainer" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

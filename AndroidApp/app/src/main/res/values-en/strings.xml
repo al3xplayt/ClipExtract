@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="placeHolderHelper">Enter the video URL</string>
+    <string name="descargar"> Download</string>
+    <string name="iniciar_sesion">Log in</string>
+    <string name="registrarse">Sign up</string>
+    <string name="error_url_empty">The url cannot be empty</string>
+    <string name="error_url_invalid">Invalid url</string>
+    <string name="bttn_historial">View history</string>
+    <string name="volver">Back</string>
+    <string name="footer">Yt downloader made for Alejandro</string>
+    <string name="deleteHistory">History deleted</string>
+    <string name="nav_menu_history">History</string>
+    <string name="nav_menu_profile">Profile</string>
+    <string name="sing_in">Enter your mail to sign up.</string>
+    <string name="create_account">You do not have account? Sign up</string>
+    <string name="error_no_values">The fields can\'t be empty</string>
+</resources>

@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name" translatable="false">ClipExtractor</string>
+    <string name="placeHolderHelper">Introduzca la url del video</string>
+    <string name="descargar"> Descargar</string>
+    <string name="iniciar_sesion">Iniciar sesion</string>
+    <string name="registrarse">Registrarse</string>
+    <string name="error_url_empty">La url no puede estar vacía</string>
+    <string name="error_url_invalid">Url invalida</string>
+    <string name="bttn_historial">Ver historial</string>
+    <string name="volver">Volver</string>
+    <string name="deleteHistory">Historial borrado</string>
+    <string-array name="format_options">
+        <item>MP3</item>
+        <item>MP4</item>
+    </string-array>
+    <string name="footer">Yt downloader hecho para Alejandro</string>
+    <string name="nav_menu_ytdownloader" translatable="false">Yt downloader</string>
+    <string name="nav_menu_clip" translatable="false">Clip maker</string>
+    <string name="nav_menu_history">Historial</string>
+    <string name="nav_menu_profile">Perfil</string>
+    <string name="sing_in">Introduzca el email para iniciar sesion.</string>
+    <string name="create_account">¿No tienes cuenta? Regístrate</string>
+    <string name="error_no_values">Los campos no pueden estar vacios</string>
+</resources>

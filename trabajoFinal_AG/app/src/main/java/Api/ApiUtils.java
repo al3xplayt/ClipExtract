@@ -101,5 +101,73 @@ public class ApiUtils {
         client.newCall(request).enqueue(new SimpleCallback(callback));
     }
 
+    // -----------------------------
+    // Ver descargas
+    // -----------------------------
+    public static void fetchDownloadHistory(String username, ApiCallback callback) {
+        String url = BASE_URL + "history/" + username;
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                // Llamamos al callback en caso de error
+                callback.onFailure(e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    try {
+                        String body = response.body().string();
+                        JSONObject jsonResponse = new JSONObject(body);
+                        callback.onSuccess(jsonResponse); // Llamamos a onSuccess con la respuesta
+                    } catch (JSONException e) {
+                        callback.onFailure(e); // Si ocurre un error al parsear, llamamos a onFailure
+                    }
+                } else {
+                    callback.onFailure(new Exception("Error en la respuesta de la API"));
+                }
+            }
+        });
+    }
+
+    // -----------------------------
+    // ELIMINAR HISTORIAL DE DESCARGAS
+    // -----------------------------
+    public static void deleteDownloadHistory(String username, ApiCallback callback) {
+        String url = BASE_URL + "history/" + username;
+
+        Request request = new Request.Builder()
+                .url(url)
+                .delete()
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                // Llamamos al callback en caso de error
+                callback.onFailure(e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    try {
+                        String body = response.body().string();
+                        JSONObject jsonResponse = new JSONObject(body);
+                        callback.onSuccess(jsonResponse); // Llamamos a onSuccess con la respuesta
+                    } catch (JSONException e) {
+                        callback.onFailure(e); // Si ocurre un error al parsear, llamamos a onFailure
+                    }
+                } else {
+                    callback.onFailure(new Exception("Error en la respuesta de la API"));
+                }
+            }
+        });
+    }
 
 }

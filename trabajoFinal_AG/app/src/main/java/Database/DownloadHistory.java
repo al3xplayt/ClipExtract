@@ -19,7 +19,9 @@ public class DownloadHistory {
         this.date = date;
         this.url = url;
     }
+    public DownloadHistory(){
 
+    }
     // Getters and Setters
     public int getId() {
         return id;

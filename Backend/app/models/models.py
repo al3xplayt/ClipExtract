@@ -19,3 +19,4 @@ class DownloadHistory(Base):
     video_url = Column(String(252), nullable=False)
     filename = Column(String(250), nullable=False)
     formato = Column(String(3), nullable=False)
+    fecha_descarga = Column(TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'), nullable=False)

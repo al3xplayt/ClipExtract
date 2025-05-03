@@ -36,7 +36,7 @@ import okhttp3.Response;
 public class GenerateClipsActivity extends AppCompatActivity {
 
     private static final int PICK_FILE_REQUEST = 1;
-    private static final String SERVER_URL = "http://192.168.1.14:5010/upload"; // Cambia a tu IP local
+    private static final String SERVER_URL = "http://192.168.1.14:50010/upload"; // Cambia a tu IP local
 
     BottomNavigationView bottomNavigationView;
 

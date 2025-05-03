@@ -95,38 +95,38 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="139dp"
+        android:layout_marginTop="49dp"
         android:layout_marginEnd="139dp"
-        android:layout_marginBottom="28dp"
         android:backgroundTint="@color/primaryColor"
         android:text="@string/iniciar_sesion"
-        app:layout_constraintBottom_toTopOf="@+id/registrarse"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/passwordContainer" />
 
     <TextView
         android:id="@+id/registrarse"
         android:layout_width="253dp"
         android:layout_height="65dp"
         android:layout_marginStart="79dp"
+        android:layout_marginTop="28dp"
         android:layout_marginEnd="79dp"
-        android:layout_marginBottom="174dp"
         android:clickable="true"
         android:focusable="true"
         android:text="@string/create_account"
         android:textColor="@android:color/holo_blue_dark"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/iniciar_sesion" />
 
     <TextView
         android:id="@+id/invitado"
         android:layout_width="208dp"
         android:layout_height="49dp"
-        android:layout_marginStart="79dp"
-        android:layout_marginEnd="79dp"
-        android:layout_marginBottom="72dp"
+        android:layout_marginStart="102dp"
+        android:layout_marginTop="53dp"
+        android:layout_marginEnd="101dp"
         android:clickable="true"
         android:focusable="true"
         android:text="Continuar como invitado"
@@ -134,9 +134,8 @@
         android:textColor="@android:color/holo_blue_dark"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/registrarse" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

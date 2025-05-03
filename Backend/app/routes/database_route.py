@@ -58,19 +58,22 @@ def get_user_history(username):
     db = SessionLocal()
     user = db.query(Usuario).filter(Usuario.user == username).first()
     if not user:
+        print(f"Usuario {username} no encontrado")
         return jsonify({"success": False, "message": "Usuario no encontrado"}), 404
-
-    history = db.query(DownloadHistory).filter(DownloadHistory.user_id == user.id).all()
+    user_id = db.query(Usuario).filter(Usuario.user == username).first().id
+    history = db.query(DownloadHistory).filter(DownloadHistory.usuario_id == user_id).all()
+    
     result = [
         {
             "video_url": h.video_url,
             "filename": h.filename,
-            "formato": h.formato
+            "formato": h.formato,
+            "fecha_descarga": h.fecha_descarga.strftime("%Y-%m-%d %H:%M:%S"),
         } for h in history
     ]
     return jsonify({"success": True, "history": result}), 200
 
-@database_bp.route("/history/<username>", methods=["DELETE"])
+@database_bp.route("/history/<username>/delete", methods=["DELETE"])
 def delete_user_history(username):
     db = SessionLocal()
     user = db.query(Usuario).filter(Usuario.user == username).first()

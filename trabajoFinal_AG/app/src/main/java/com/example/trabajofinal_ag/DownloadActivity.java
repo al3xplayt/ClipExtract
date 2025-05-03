@@ -187,15 +187,11 @@ public class DownloadActivity extends AppCompatActivity {
                     String userName = prefs.getString("user_name", "null");
 
                     if (userName.equals("null")) {
-                        runOnUiThread(() -> Toast.makeText(DownloadActivity.this, "El usuario es " + userName, Toast.LENGTH_SHORT).show());
                         String currentDate = getCurrentDate();
                         saveDownloadHistory(finalFileName, format.toUpperCase(), currentDate, urlText);
                         notifyServerFileDownloaded(finalFileName);
                         return;
-                    } else {
-                        runOnUiThread(() -> Toast.makeText(DownloadActivity.this, "El usuario es " + userName, Toast.LENGTH_SHORT).show());
                     }
-
                     ApiUtils.registerDownload(userName, urlText, finalFileName, format, new ApiCallback() {
                         @Override
                         public void onSuccess(JSONObject response) {

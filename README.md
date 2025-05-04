@@ -1,5 +1,3 @@
-Tu fragmento del README está bastante claro, pero puede mejorarse para mayor profesionalidad, legibilidad y precisión técnica. Aquí tienes una versión mejorada, seguida de sugerencias para cómo continuarlo:
-
 ---
 
 # 🎬 ClipExtract

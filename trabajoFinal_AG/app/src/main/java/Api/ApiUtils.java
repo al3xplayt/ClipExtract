@@ -1,5 +1,6 @@
 package Api;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.widget.Toast;
@@ -24,7 +25,21 @@ import okio.Okio;
 
 public class ApiUtils {
 
-    private static final String BASE_URL = "http://192.168.1.14:50010/";
+    // ApiUtils.java
+    private static String BASE_URL = "http://192.168.1.14:50010/"; // Valor por defecto
+
+    public static void loadBaseUrlFromPreferences(SharedPreferences prefs) {
+        BASE_URL = prefs.getString("base_url", BASE_URL);
+    }
+
+    public static void setBaseUrl(String url) {
+        BASE_URL = url;
+    }
+
+    public static String getBaseUrl() {
+        return BASE_URL;
+    }
+
 
     private static final OkHttpClient client = new OkHttpClient();
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
@@ -169,5 +184,6 @@ public class ApiUtils {
             }
         });
     }
+
 
 }

@@ -2,9 +2,21 @@ import os, threading
 from pathlib import Path
 import yt_dlp
 import ffmpeg
+import re
 
 TEMP_DIR = 'Backend/data/temp_files'
 os.makedirs(TEMP_DIR, exist_ok=True)
+
+
+def sanitize_filename(filename):
+    filename = filename.replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u')
+    filename = filename.replace('Á', 'A').replace('É', 'E').replace('Í', 'I').replace('Ó', 'O').replace('Ú', 'U')
+
+    filename = re.sub(r'[^\x00-\x7F]+', '', filename) 
+
+    filename = filename.replace(' ', '_')
+
+    return filename
 
 def download_video(url, formato):
     try:

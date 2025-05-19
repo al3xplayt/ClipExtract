@@ -4,6 +4,7 @@ import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
 import android.content.Intent;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.ImageView;
@@ -32,6 +33,10 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import android.graphics.Bitmap;
+import android.provider.MediaStore;
+import android.widget.ImageView;
+
 
 public class GenerateClipsActivity extends AppCompatActivity {
 
@@ -88,6 +93,37 @@ public class GenerateClipsActivity extends AppCompatActivity {
 
         if (requestCode == PICK_FILE_REQUEST && resultCode == RESULT_OK && data != null) {
             Uri selectedUri = data.getData();
+
+            // Mostrar miniatura
+            try {
+                File file = getFileFromUri(selectedUri);
+                if (file != null) {
+                    // Crear miniatura
+                    Bitmap thumbnail = ThumbnailUtils.createVideoThumbnail(
+                            file.getAbsolutePath(),
+                            MediaStore.Video.Thumbnails.MINI_KIND
+                    );
+                    // Mostrar la miniatura en el ImageView
+                    runOnUiThread(() -> {
+                        ImageView preview = findViewById(R.id.previewThumbnail);
+                        preview.setImageBitmap(thumbnail);
+                    });
+                    // Subir el archivo
+                    uploadFileToServer(file);
+                }
+                else {
+                    Toast.makeText(this, "Error al leer el archivo", Toast.LENGTH_SHORT).show();
+                    ImageView preview = findViewById(R.id.previewThumbnail);
+                    preview.setImageResource(android.R.color.transparent);
+                }
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "No se pudo generar miniatura", Toast.LENGTH_SHORT).show();
+            }
+
+            // Subida como ya tenías
             File file = getFileFromUri(selectedUri);
             if (file != null) {
                 uploadFileToServer(file);
@@ -96,6 +132,7 @@ public class GenerateClipsActivity extends AppCompatActivity {
             }
         }
     }
+
 
     private File getFileFromUri(Uri uri) {
         File file = new File(getCacheDir(), "temp_video.mp4");

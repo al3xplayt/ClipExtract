@@ -34,9 +34,6 @@ def verificar_usuario(db: Session, email: str, contrasena: str, user: str):
             or_(Usuario.email == email, Usuario.user == user)
         ).first()
         if not usuario:
-            print("-"*20)
-            print(type(usuario))
-            print("-"*20)
             return {"success": False, "message": "Usuario no encontrado.", "usuario" : usuario}  # Usuario no existe
 
         # Verificar la contraseña

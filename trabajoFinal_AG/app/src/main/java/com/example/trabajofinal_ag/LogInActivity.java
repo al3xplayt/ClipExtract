@@ -1,5 +1,6 @@
 package com.example.trabajofinal_ag;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -25,7 +26,7 @@ public class LogInActivity extends AppCompatActivity {
     private EditText etEmail, etPassword;
     private ImageView toggle;
     TextView registrarse, invitado;
-    private Button btnLogin;
+    private Button btnLogin, btnCambiarUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,22 +43,24 @@ public class LogInActivity extends AppCompatActivity {
         // Inicializar vistas
         etEmail = findViewById(R.id.email);
         etPassword = findViewById(R.id.etPassword);
-
         toggle = findViewById(R.id.showPasswordToggle);
         btnLogin = findViewById(R.id.iniciar_sesion);
         registrarse = findViewById(R.id.registrarse);
+        invitado = findViewById(R.id.invitado);
+        btnCambiarUrl = findViewById(R.id.btn_cambiar_url); // NUEVO
 
-        // Acciones
+        // Cargar URL base si está guardada
+        SharedPreferences prefs = getSharedPreferences("config", MODE_PRIVATE);
+        ApiUtils.loadBaseUrlFromPreferences(prefs);
+
         registrarse.setOnClickListener(v -> {
             Intent intent = new Intent(LogInActivity.this, RegisterActivity.class);
             startActivity(intent);
         });
 
-        invitado = findViewById(R.id.invitado);
         invitado.setOnClickListener(v -> {
             Intent intent = new Intent(LogInActivity.this, DownloadActivity.class);
-            SharedPreferences prefs = getSharedPreferences("user_data", MODE_PRIVATE);
-            SharedPreferences.Editor editor = prefs.edit();
+            SharedPreferences.Editor editor = getSharedPreferences("user_data", MODE_PRIVATE).edit();
             editor.putString("user_name", "null");
             editor.apply();
             startActivity(intent);
@@ -75,25 +78,22 @@ public class LogInActivity extends AppCompatActivity {
             etPassword.setSelection(etPassword.length()); // Mantener cursor al final
         });
 
-        // Validación (ejemplo simple, debería ir en botón de login si lo tienes)
-        btnLogin.setOnClickListener(
-                v -> {
-                    validarCampos();
-                }
-        );
+        btnLogin.setOnClickListener(v -> validarCampos());
+
+        // NUEVO: Botón para cambiar URL
+        btnCambiarUrl.setOnClickListener(v -> mostrarDialogoCambioURL());
     }
 
     private void validarCampos() {
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
-        String username = etEmail.getText().toString().trim();
-        if ((email.isEmpty() || username.isEmpty()) || password.isEmpty()) {
+        String username = email;
+        if (email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
         ApiUtils.loginUser(email, password, username, new ApiCallback() {
-
             @Override
             public void onSuccess(JSONObject response) {
                 runOnUiThread(() -> {
@@ -116,7 +116,6 @@ public class LogInActivity extends AppCompatActivity {
                         } else {
                             Toast.makeText(LogInActivity.this, message, Toast.LENGTH_SHORT).show();
                         }
-
                     } catch (Exception e) {
                         Toast.makeText(LogInActivity.this, "Error al procesar respuesta", Toast.LENGTH_SHORT).show();
                         e.printStackTrace();
@@ -132,5 +131,30 @@ public class LogInActivity extends AppCompatActivity {
             }
         });
     }
-}
 
+    // NUEVO: Función para mostrar el diálogo y guardar nueva URL
+    private void mostrarDialogoCambioURL() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Cambiar URL del servidor");
+
+        final EditText input = new EditText(this);
+        input.setHint("En uso: " + ApiUtils.getBaseUrl());
+        input.setText(ApiUtils.getBaseUrl());
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("Guardar", (dialog, which) -> {
+            String nuevaUrl = input.getText().toString().trim();
+            if (!nuevaUrl.isEmpty()) {
+                SharedPreferences prefs = getSharedPreferences("config", MODE_PRIVATE);
+                prefs.edit().putString("base_url", nuevaUrl).apply();
+                ApiUtils.setBaseUrl(nuevaUrl);
+                Toast.makeText(this, "URL actualizada", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+}

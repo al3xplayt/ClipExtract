@@ -11,13 +11,13 @@ def registro():
     db = SessionLocal()
     usuario = crear_usuario(db, data["nombre"], data["surname"], data["email"], data["contrasena"], data["username"])
     db.close()
-    error = usuario.get("error")
-    print(f"usuario: {usuario}")
-    print(error)
+    
     if not usuario:
+        error = usuario.get("error")
+        print(f"usuario: {usuario}")
+        print(error)
         return jsonify({"success": False}), 409  # Conflicto, ya registrado
-    if error:
-        return jsonify({"success": False, "message": error}), 409
+
     return jsonify({"success": True}), 201  # Creado correctamente
 
 @database_bp.route("/login", methods=["POST"])
@@ -79,6 +79,7 @@ def delete_user_history(username):
     user = db.query(Usuario).filter(Usuario.user == username).first()
     if not user:
         return jsonify({"success": False, "message": "Usuario no encontrado"}), 404
+    
     user_id = db.query(Usuario).filter(Usuario.user == username).first().id
     db.query(DownloadHistory).filter(DownloadHistory.usuario_id == user_id).delete()
     db.commit()

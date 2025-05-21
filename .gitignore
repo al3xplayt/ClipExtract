@@ -1,2 +1,3 @@
 .\Backend\env_clipExtractor\*
 .\env
+.\Backend\app\data\*

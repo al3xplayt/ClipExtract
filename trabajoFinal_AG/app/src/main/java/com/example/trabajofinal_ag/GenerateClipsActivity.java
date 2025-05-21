@@ -4,9 +4,14 @@ import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -19,35 +24,42 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import android.graphics.Bitmap;
-import android.provider.MediaStore;
-import android.widget.ImageView;
+import Adapters.ClipAdapter;
+import Api.ApiUtils;
+import Api.ApiCallback;
+import Models.Clip;
+
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 
 public class GenerateClipsActivity extends AppCompatActivity {
 
     private static final int PICK_FILE_REQUEST = 1;
-    private static final String SERVER_URL = "http://192.168.1.14:50010/upload"; // Cambia a tu IP local
 
     BottomNavigationView bottomNavigationView;
+    ProgressBar uploadProgress;
+    Button extractClipsButton;
+
+    private File uploadedFile = null;  // ← para guardar el archivo subido
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_generate_clips);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_generate_clips);
 
@@ -57,10 +69,11 @@ public class GenerateClipsActivity extends AppCompatActivity {
             return insets;
         });
 
-
-
+        uploadProgress = findViewById(R.id.uploadProgress);
         bottomNavigationView = findViewById(R.id.bottom_navigation);
-        ProgressBar uploadProgress = findViewById(R.id.uploadProgress);
+        bottomNavigationView.setSelectedItemId(R.id.nav_clip);
+        extractClipsButton = findViewById(R.id.extractClip);
+        extractClipsButton.setEnabled(false); // desactivado hasta que se suba el video
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -79,6 +92,14 @@ public class GenerateClipsActivity extends AppCompatActivity {
 
         ImageView uploadButton = findViewById(R.id.uploadButton);
         uploadButton.setOnClickListener(v -> openFilePicker());
+
+        extractClipsButton.setOnClickListener(v -> {
+            if (uploadedFile != null) {
+                extractClips(uploadedFile.getName());
+            } else {
+                Toast.makeText(this, "Primero sube un video", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void openFilePicker() {
@@ -93,55 +114,39 @@ public class GenerateClipsActivity extends AppCompatActivity {
 
         if (requestCode == PICK_FILE_REQUEST && resultCode == RESULT_OK && data != null) {
             Uri selectedUri = data.getData();
-
-            // Mostrar miniatura
-            try {
-                File file = getFileFromUri(selectedUri);
-                if (file != null) {
-                    // Crear miniatura
-                    Bitmap thumbnail = ThumbnailUtils.createVideoThumbnail(
-                            file.getAbsolutePath(),
-                            MediaStore.Video.Thumbnails.MINI_KIND
-                    );
-                    // Mostrar la miniatura en el ImageView
-                    runOnUiThread(() -> {
-                        ImageView preview = findViewById(R.id.previewThumbnail);
-                        preview.setImageBitmap(thumbnail);
-                    });
-                    // Subir el archivo
-                    uploadFileToServer(file);
-                }
-                else {
-                    Toast.makeText(this, "Error al leer el archivo", Toast.LENGTH_SHORT).show();
-                    ImageView preview = findViewById(R.id.previewThumbnail);
-                    preview.setImageResource(android.R.color.transparent);
-                }
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(this, "No se pudo generar miniatura", Toast.LENGTH_SHORT).show();
-            }
-
-            // Subida como ya tenías
             File file = getFileFromUri(selectedUri);
+
             if (file != null) {
-                uploadFileToServer(file);
+                showVideoThumbnail(file);
+                uploadedFile = file;
+                uploadFile(file);
             } else {
                 Toast.makeText(this, "Error al leer el archivo", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
+    private void showVideoThumbnail(File file) {
+        Bitmap thumbnail = ThumbnailUtils.createVideoThumbnail(
+                file.getAbsolutePath(),
+                MediaStore.Video.Thumbnails.MINI_KIND
+        );
+        runOnUiThread(() -> {
+            ImageView preview = findViewById(R.id.previewThumbnail);
+            preview.setImageBitmap(thumbnail);
+        });
+    }
 
     private File getFileFromUri(Uri uri) {
-        File file = new File(getCacheDir(), "temp_video.mp4");
+        String fileName = getFileNameFromUri(uri);
+        File file = new File(getCacheDir(), fileName);
+
         try (InputStream inputStream = getContentResolver().openInputStream(uri);
              OutputStream outputStream = new FileOutputStream(file)) {
             byte[] buffer = new byte[4096];
-            int length;
-            while ((length = inputStream.read(buffer)) > 0) {
-                outputStream.write(buffer, 0, length);
+            int len;
+            while ((len = inputStream.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, len);
             }
             return file;
         } catch (IOException e) {
@@ -150,41 +155,83 @@ public class GenerateClipsActivity extends AppCompatActivity {
         }
     }
 
-    private void uploadFileToServer(File file) {
-        ProgressBar uploadProgress = findViewById(R.id.uploadProgress);
+    private String getFileNameFromUri(Uri uri) {
+        String result = null;
+        if ("content".equals(uri.getScheme())) {
+            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    if (index != -1) result = cursor.getString(index);
+                }
+            }
+        }
+        if (result == null) result = uri.getLastPathSegment();
+        return result;
+    }
+
+    private void uploadFile(File file) {
         uploadProgress.setVisibility(VISIBLE);
-
-        OkHttpClient client = new OkHttpClient();
-        MediaType mediaType = MediaType.parse("video/mp4");
-        RequestBody fileBody = RequestBody.create(file, mediaType);
-
-        MultipartBody requestBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("file", file.getName(), fileBody)
-                .build();
-
-        Request request = new Request.Builder()
-                .url(SERVER_URL)
-                .post(requestBody)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
+        ApiUtils.uploadFile(file, new ApiCallback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onSuccess(JSONObject response) {
                 runOnUiThread(() -> {
                     uploadProgress.setVisibility(GONE);
-                    Toast.makeText(getApplicationContext(), "Error al subir archivo", Toast.LENGTH_SHORT).show();
+                    extractClipsButton.setEnabled(true); // habilitar botón
+                    Toast.makeText(getApplicationContext(), "Video subido correctamente", Toast.LENGTH_SHORT).show();
                 });
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                runOnUiThread(() -> uploadProgress.setVisibility(GONE));
-                if (response.isSuccessful()) {
-                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Archivo subido exitosamente", Toast.LENGTH_SHORT).show());
-                } else {
-                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Error del servidor: " + response.code(), Toast.LENGTH_SHORT).show());
-                }
+            public void onFailure(Exception e) {
+                runOnUiThread(() -> {
+                    uploadProgress.setVisibility(GONE);
+                    Toast.makeText(getApplicationContext(), "Error al subir: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            }
+        });
+    }
+
+    private void extractClips(String fileName) {
+        uploadProgress.setVisibility(VISIBLE);
+
+        ApiUtils.extractClipsFromFile(fileName, new ApiCallback() {
+            @Override
+            public void onSuccess(JSONObject response) {
+                runOnUiThread(() -> {
+                    uploadProgress.setVisibility(GONE);
+                    try {
+                        JSONArray clipsArray = response.getJSONArray("clips");
+                        List<Clip> clips = new ArrayList<>();
+                        for (int i = 0; i < clipsArray.length(); i++) {
+                            JSONObject obj = clipsArray.getJSONObject(i);
+                            double start = obj.getDouble("start");
+                            double end = obj.getDouble("end");
+                            clips.add(new Clip(start, end));
+                        }
+
+                        if (clips.isEmpty()) {
+                            Toast.makeText(getApplicationContext(), "No se detectaron clips", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        RecyclerView recyclerView = findViewById(R.id.clipRecyclerView);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+                        recyclerView.setAdapter(new ClipAdapter(clips));
+                        recyclerView.setVisibility(VISIBLE);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(getApplicationContext(), "Error al leer clips", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                runOnUiThread(() -> {
+                    uploadProgress.setVisibility(GONE);
+                    Toast.makeText(getApplicationContext(), "Error al extraer: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
             }
         });
     }

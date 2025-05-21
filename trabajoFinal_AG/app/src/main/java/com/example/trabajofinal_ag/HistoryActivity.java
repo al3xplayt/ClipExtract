@@ -24,8 +24,8 @@ import java.util.List;
 
 import Api.ApiCallback;
 import Api.ApiUtils;
-import Database.DownloadHistory;
-import Database.HistoryAdapter;
+import Models.DownloadHistory;
+import Adapters.HistoryAdapter;
 
 public class HistoryActivity extends AppCompatActivity {
     private RecyclerView recyclerView;

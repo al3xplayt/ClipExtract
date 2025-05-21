@@ -15,7 +15,9 @@ import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -184,6 +186,80 @@ public class ApiUtils {
             }
         });
     }
+    // -----------------------------
+// SUBIR VIDEO Y EXTRAER CLIPS
+// -----------------------------
+    // Subir archivo sin extracción
+    public static void uploadFile(File videoFile, ApiCallback callback) {
+        MediaType mediaType = MediaType.parse("video/mp4");
+        RequestBody fileBody = RequestBody.create(videoFile, mediaType);
+
+        MultipartBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("file", videoFile.getName(), fileBody)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(BASE_URL + "upload")
+                .post(requestBody)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onFailure(e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    try {
+                        String body = response.body().string();
+                        callback.onSuccess(new JSONObject(body));
+                    } catch (Exception e) {
+                        callback.onFailure(e);
+                    }
+                } else {
+                    callback.onFailure(new IOException("Error en la respuesta: " + response.code()));
+                }
+            }
+        });
+    }
+
+    // Llamar al endpoint de extracción
+    public static void extractClipsFromFile(String fileName, ApiCallback callback) {
+        HttpUrl url = HttpUrl.parse(BASE_URL + "extract_clips")
+                .newBuilder()
+                .addQueryParameter("filename", fileName)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onFailure(e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    try {
+                        String body = response.body().string();
+                        callback.onSuccess(new JSONObject(body));
+                    } catch (Exception e) {
+                        callback.onFailure(e);
+                    }
+                } else {
+                    callback.onFailure(new IOException("Error al extraer: " + response.code()));
+                }
+            }
+        });
+    }
+
 
 
 }

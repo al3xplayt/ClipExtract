@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 import Api.ApiCallback;
 import Api.ApiUtils;
 import Database.AppDatabase;
-import Database.DownloadHistory;
+import Models.DownloadHistory;
 import okhttp3.*;
 import okio.BufferedSink;
 import okio.Okio;
@@ -74,6 +74,7 @@ public class DownloadActivity extends AppCompatActivity {
 
         Bundle bundle = getIntent().getExtras();
         bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_home);
 
         if (bundle != null) {
             String url = bundle.getString("url");

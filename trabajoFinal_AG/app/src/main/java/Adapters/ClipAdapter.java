@@ -46,8 +46,8 @@ public class ClipAdapter extends RecyclerView.Adapter<ClipAdapter.ClipViewHolder
 
         public ClipViewHolder(@NonNull View itemView) {
             super(itemView);
-            clipRange = itemView.findViewById(R.id.clipRange);
-            clipDuration = itemView.findViewById(R.id.clipDuration);
+            clipRange = itemView.findViewById(R.id.clipTimes);
+            
         }
     }
 }

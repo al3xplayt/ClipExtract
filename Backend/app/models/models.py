@@ -20,3 +20,19 @@ class DownloadHistory(Base):
     filename = Column(String(250), nullable=False)
     formato = Column(String(3), nullable=False)
     fecha_descarga = Column(TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'), nullable=False)
+
+class Video(Base):
+    __tablename__ = 'videos'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    titulo = Column(String(255), nullable=False)
+    fecha_subida = Column(TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'), nullable=False)
+    usuario_id = Column(Integer, ForeignKey('usuarios.id'), nullable=False)
+    duracion = Column(float, nullable=False)  # Duración en segundos
+    ruta = Column(String(255), nullable=False)  # Ruta del archivo de video
+
+class Clip(Base):
+    __tablename__ = 'historial_clips'
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey('usuarios.id'), nullable=False)
+    video_id = Column(Integer, ForeignKey('videos.id'), nullable=False)

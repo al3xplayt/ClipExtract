@@ -12,19 +12,19 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/clipRange"
+            android:id="@+id/clipTimes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="7.08 - 20.14 sec"
+            android:text="Clip del 00:00 al 00:10"
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/clipDuration"
+        <Button
+            android:id="@+id/downloadClipBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Duración: 13.06 sec"
-            android:textSize="14sp" />
+            android:text="Descargar Clip"
+            android:layout_marginTop="8dp" />
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

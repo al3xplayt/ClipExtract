@@ -74,3 +74,19 @@ def subir_descarga(db: Session, video_url: str, filename: str, user: str, format
         print(f"Error al subir descarga: {str(e)}")
         return {"success": False,"error": "Error en la base de datos al subir descarga."}  # Error general de base de datos
     
+def registrar_clip(db: Session, video_url: str, filename: str, user: str, formato: str):
+    try:
+        usuario = db.query(Usuario).filter(Usuario.user == user).first()
+        if not usuario:
+            return {"success": False, "error": "Usuario no encontrado."}  # Usuario no existe
+        
+        nuevo_clip = ClipHistory(usuario_id=usuario.id, video_url=video_url, filename=filename, formato=formato)
+        db.add(nuevo_clip)
+        db.commit()
+        db.refresh(nuevo_clip)
+        
+        return {"success": True, "message": "Clip registrado correctamente."}
+    
+    except SQLAlchemyError as e:
+        print(f"Error al registrar clip: {str(e)}")
+        return {"success": False, "error": "Error en la base de datos al registrar clip."}  # Error general de base de datos

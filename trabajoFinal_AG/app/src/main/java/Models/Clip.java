@@ -30,4 +30,5 @@ public class Clip {
         this.downloadUrl = downloadUrl;
     }
     public String getDownloadUrl() { return downloadUrl; }
+
 }

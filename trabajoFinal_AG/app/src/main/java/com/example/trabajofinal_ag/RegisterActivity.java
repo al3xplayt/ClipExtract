@@ -84,7 +84,8 @@ public class RegisterActivity extends AppCompatActivity {
                                 Toast.makeText(RegisterActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
                                 finish();
                             } else{
-                                Toast.makeText(RegisterActivity.this, "Ya existe un usuario con ese nombre", Toast.LENGTH_SHORT).show();
+                                String errorMessage = response.getString("message");
+                                Toast.makeText(RegisterActivity.this, errorMessage , Toast.LENGTH_SHORT).show();
                             }
 
                         } catch (Exception e) {

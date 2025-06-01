@@ -1,7 +1,7 @@
 import cv2
 import os
 
-def detect_scene_changes(video_path, threshold=15.0, min_scene_gap=2.0):
+def detect_scene_changes(video_path, threshold= 15.0, min_scene_gap=4.0):
     cap = cv2.VideoCapture(video_path)
     fps = cap.get(cv2.CAP_PROP_FPS)
     timestamps = []

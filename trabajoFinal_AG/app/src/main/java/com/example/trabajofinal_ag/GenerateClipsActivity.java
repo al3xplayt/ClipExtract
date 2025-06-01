@@ -216,7 +216,7 @@ public class GenerateClipsActivity extends AppCompatActivity {
 
                         RecyclerView recyclerView = findViewById(R.id.clipRecyclerView);
                         recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-                        recyclerView.setAdapter(new ClipAdapter(clips));
+                        recyclerView.setAdapter(new ClipAdapter(getApplicationContext()  ,clips));
                         recyclerView.setVisibility(VISIBLE);
 
                     } catch (JSONException e) {

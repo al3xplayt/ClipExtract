@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, text, ForeignKey
+from sqlalchemy import Column, Integer, String, TIMESTAMP, text, ForeignKey, Float
 from app.database import Base
 
 class Usuario(Base):
@@ -28,7 +28,7 @@ class Video(Base):
     titulo = Column(String(255), nullable=False)
     fecha_subida = Column(TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'), nullable=False)
     usuario_id = Column(Integer, ForeignKey('usuarios.id'), nullable=False)
-    duracion = Column(float, nullable=False)  # Duración en segundos
+    duracion = Column(Float, nullable=False)  # Duración en segundos
     ruta = Column(String(255), nullable=False)  # Ruta del archivo de video
 
 class Clip(Base):

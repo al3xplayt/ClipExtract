@@ -12,7 +12,9 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
+import Models.Clip;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.HttpUrl;
@@ -255,6 +257,58 @@ public class ApiUtils {
                     }
                 } else {
                     callback.onFailure(new IOException("Error al extraer: " + response.code()));
+                }
+            }
+        });
+    }
+    // -----------------------------
+    // DESCARGAR CLIP
+    // -----------------------------
+    public static void downloadClip(Clip clip, ApiCallback callback) {
+        // Aquí crea la request para backend con nombre archivo, start y end
+        // Puedes usar OkHttp o Retrofit
+
+        // Ejemplo con OkHttp:
+        OkHttpClient client = new OkHttpClient();
+
+        JSONObject json = new JSONObject();
+        try {
+            json.put("fileName", clip.getDownloadUrl());
+            json.put("start", clip.getStart());
+            json.put("end", clip.getEnd());
+        } catch (JSONException e) {
+            callback.onFailure(e);
+            return;
+        }
+
+        RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json"));
+        Request request = new Request.Builder()
+                .url(BASE_URL + "/download_clip")
+                .post(body)
+                .build();
+
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(okhttp3.Call call, IOException e) {
+                callback.onFailure(e);
+            }
+
+            @Override
+            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    // Guarda el archivo mp4 en almacenamiento
+                    InputStream is = response.body().byteStream();
+                    // Guarda en disco con FileOutputStream...
+                    // Lógica de guardado aquí
+
+                    // Notifica éxito
+                    try {
+                        callback.onSuccess(new JSONObject().put("message", "Clip descargado correctamente"));
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    callback.onFailure(new Exception("Error en descarga: " + response.message()));
                 }
             }
         });

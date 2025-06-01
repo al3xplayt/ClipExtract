@@ -7,11 +7,16 @@ from sqlalchemy.exc import SQLAlchemyError
 def crear_usuario(db: Session, nombre: str, apellido: str, email: str, contrasena: str, user: str):
     try:
         # Verifica si ya existe el usuario
-        usuario_existente = db.query(Usuario).filter(
-            or_(Usuario.email == email, Usuario.user == user)
+        usuario_en_uso = db.query(Usuario).filter((Usuario.user == user)
         ).first()
-        if usuario_existente:
-            return {"error": "Ya existe un usuario con ese email o nombre de usuario."} 
+
+        correo_en_uso = db.query(Usuario).filter(
+            or_(Usuario.email == email)
+        ).first()
+        if usuario_en_uso:
+            return {"message": "El nombre de usuario ya etsa en uso."}
+        if correo_en_uso:
+            return {"message": "El correo electrónico ya está en uso."} 
 
         hash_pass = generate_password_hash(contrasena)
 

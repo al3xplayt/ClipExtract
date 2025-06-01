@@ -12,10 +12,8 @@ def registro():
     usuario = crear_usuario(db, data["nombre"], data["surname"], data["email"], data["contrasena"], data["username"])
     db.close()
     
-    if not usuario:
-        error = usuario.get("error")
-        print(f"usuario: {usuario}")
-        print(error)
+    if usuario.get("error"):
+        print(f"Error al crear usuario: {usuario['error']}")
         return jsonify({"success": False}), 409  # Conflicto, ya registrado
 
     return jsonify({"success": True}), 201  # Creado correctamente

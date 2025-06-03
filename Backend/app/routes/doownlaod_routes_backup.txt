@@ -1,3 +1,4 @@
+### V1 
 from flask import Blueprint, request, jsonify, send_file
 from pathlib import Path
 from app.services.download_service import download_video
@@ -37,8 +38,14 @@ def download_page():
 def delete():
     data = request.get_json()
     file_name = data.get('file_name')
+    print(f"Recibido para eliminar: {file_name}")
     if not file_name:
+        print("No se proporcionó nombre de archivo")
         return jsonify({"error": "No se proporcionó nombre de archivo"}), 400
+    print(f"Programando eliminación de: {file_name}")
     schedule_delete(file_name)
     return jsonify({"message": f"Archivo '{file_name}' programado para eliminación"}), 200
 
+_____________________________________________________________________________________________________________________________________________________________________________________
+
+###V2 asincrono aaaaaaa

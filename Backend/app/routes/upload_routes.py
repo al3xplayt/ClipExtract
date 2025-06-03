@@ -28,6 +28,7 @@ def upload_file():
 
     filename = secure_filename(file.filename)
     file_path = os.path.join(UPLOAD_FOLDER, filename)
+    print(f"Ruta del archivo: {file_path} con nombre: {filename}")
     file.save(file_path)
 
     return jsonify({

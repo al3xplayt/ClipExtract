@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, text, ForeignKey, Float
+from sqlalchemy import Column, Integer, String, TIMESTAMP, text, ForeignKey, Float, Text, DOUBLE_PRECISION
 from app.database import Base
 
 class Usuario(Base):
@@ -25,14 +25,17 @@ class Video(Base):
     __tablename__ = 'videos'
     
     id = Column(Integer, primary_key=True, index=True)
-    titulo = Column(String(255), nullable=False)
-    fecha_subida = Column(TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'), nullable=False)
-    usuario_id = Column(Integer, ForeignKey('usuarios.id'), nullable=False)
-    duracion = Column(Float, nullable=False)  # Duración en segundos
-    ruta = Column(String(255), nullable=False)  # Ruta del archivo de video
+    filename = Column(Text, nullable=False)
+    status = Column(Text, nullable=False, default='pending')
+    path = Column(Text, nullable=False)
+    user_id = Column(Integer, ForeignKey('usuarios.id'), nullable=False)
 
 class Clip(Base):
-    __tablename__ = 'historial_clips'
+    __tablename__ = 'clips'
+    
     id = Column(Integer, primary_key=True, index=True)
-    usuario_id = Column(Integer, ForeignKey('usuarios.id'), nullable=False)
     video_id = Column(Integer, ForeignKey('videos.id'), nullable=False)
+    start_time = Column(DOUBLE_PRECISION, nullable=False)
+    end_time = Column(DOUBLE_PRECISION, nullable=False)
+    clip_path = Column(Text, nullable=False)
+    user_id = Column(Integer, ForeignKey('usuarios.id'), nullable=False)

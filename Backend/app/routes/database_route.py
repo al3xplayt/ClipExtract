@@ -83,19 +83,4 @@ def delete_user_history(username):
     db.commit()
     return jsonify({"success": True, "message": "Historial eliminado"}), 200
 
-@database_bp.route("/regist_clips", methods=["POST"])
-def regist_clips():
-    data = request.json
-    db = SessionLocal()
-    resultado = registrar_clips(db, data["url"], data["username"], data["formato"])
-    db.close()
-
-    if not resultado["success"]:
-        print(f"Usuario {data['username']}")
-        print(data["url"])
-        print(resultado["error"])
-        print("_"*20)
-        return jsonify({"success": False, "message": resultado["error"]}), 404
-
-    return jsonify({"success": True, "message": resultado["message"]}), 200
 

@@ -304,11 +304,10 @@ public class ApiUtils {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    File downloadsDir = new File(activity.getExternalFilesDir(null), "Downloads");
-                    if (!downloadsDir.exists()) downloadsDir.mkdirs();
+
 
                     String fileName = clip.getFileName() + "_"+ (int)clip.getStart() +"_"+ (int)clip.getEnd() +".mp4";
-                    File clipFile = new File(downloadsDir, fileName);
+                    File clipFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileName);
 
                     try (FileOutputStream fos = new FileOutputStream(clipFile)) {
                         fos.write(response.body().bytes());

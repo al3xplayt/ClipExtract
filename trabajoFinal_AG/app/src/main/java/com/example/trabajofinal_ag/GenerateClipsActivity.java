@@ -15,7 +15,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -47,15 +46,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class GenerateClipsActivity extends AppCompatActivity {
 
+    // Declaración de adapter como variable de clase
+    private ClipAdapter clipAdapter;
+
+    // ... tus variables actuales
     private static final int PICK_FILE_REQUEST = 1;
 
     BottomNavigationView bottomNavigationView;
     ProgressBar uploadProgress;
     Button extractClipsButton;
     ImageView preview;
-    private File uploadedFile = null;  // ← para guardar el archivo subido
+    private File uploadedFile = null;
 
-    private RecyclerView recyclerView; // RecyclerView declarado a nivel clase
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +66,7 @@ public class GenerateClipsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_generate_clips);
         EdgeToEdge.enable(this);
 
+        // Configuración del edge-to-edge
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -73,12 +77,14 @@ public class GenerateClipsActivity extends AppCompatActivity {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_clip);
         extractClipsButton = findViewById(R.id.extractClip);
-        extractClipsButton.setEnabled(false); // desactivado hasta que se suba el video
+        extractClipsButton.setEnabled(false);
 
         recyclerView = findViewById(R.id.clipRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new ClipAdapter(new ArrayList<>(), this)); // Adapter vacío inicial
-        recyclerView.setVisibility(GONE);  // Oculto inicialmente
+        // Inicializa adapter vacío
+        clipAdapter = new ClipAdapter(new ArrayList<>(), this);
+        recyclerView.setAdapter(clipAdapter);
+        recyclerView.setVisibility(GONE);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -107,6 +113,59 @@ public class GenerateClipsActivity extends AppCompatActivity {
         });
     }
 
+    // Resto de métodos existentes sin cambios
+    // openFilePicker(), onActivityResult(), showVideoThumbnail(), getFileFromUri(), getFileNameFromUri(), uploadFile()
+
+    private void extractClips(String fileName) {
+        uploadProgress.setVisibility(VISIBLE);
+
+        ApiUtils.extractClipsFromFile(fileName, new ApiCallback() {
+            @Override
+            public void onSuccess(JSONObject response) {
+                runOnUiThread(() -> {
+                    uploadProgress.setVisibility(GONE);
+                    try {
+                        String fileName = response.getString("filename");
+                        JSONArray clipsArray = response.getJSONArray("clips");
+                        List<Clip> clips = new ArrayList<>();
+                        for (int i = 0; i < clipsArray.length(); i++) {
+                            JSONObject obj = clipsArray.getJSONObject(i);
+                            double start = obj.getDouble("start");
+                            double end = obj.getDouble("end");
+                            clips.add(new Clip(fileName, start, end));
+                        }
+
+                        if (clips.isEmpty()) {
+                            recyclerView.setVisibility(GONE);
+                            Toast.makeText(getApplicationContext(), "No se detectaron clips", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        // Liberar players antiguos antes de asignar nuevo adapter
+                        if (clipAdapter != null) {
+                            clipAdapter.releasePlayers();
+                        }
+
+                        clipAdapter = new ClipAdapter(clips, GenerateClipsActivity.this);
+                        recyclerView.setAdapter(clipAdapter);
+                        recyclerView.setVisibility(VISIBLE);
+                        preview.setVisibility(GONE);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(getApplicationContext(), "Error al leer clips", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                runOnUiThread(() -> {
+                    uploadProgress.setVisibility(GONE);
+                    Toast.makeText(getApplicationContext(), "Error al extraer: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            }
+        });
+    }
     private void openFilePicker() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("video/mp4");
@@ -195,51 +254,4 @@ public class GenerateClipsActivity extends AppCompatActivity {
             }
         });
     }
-
-    private void extractClips(String fileName) {
-        uploadProgress.setVisibility(VISIBLE);
-
-        ApiUtils.extractClipsFromFile(fileName, new ApiCallback() {
-            @Override
-            public void onSuccess(JSONObject response) {
-                runOnUiThread(() -> {
-                    uploadProgress.setVisibility(GONE);
-                    try {
-                        String fileName = response.getString("filename");
-                        JSONArray clipsArray = response.getJSONArray("clips");
-                        List<Clip> clips = new ArrayList<>();
-                        for (int i = 0; i < clipsArray.length(); i++) {
-                            JSONObject obj = clipsArray.getJSONObject(i);
-                            double start = obj.getDouble("start");
-                            double end = obj.getDouble("end");
-                            clips.add(new Clip(fileName, start, end));
-                        }
-
-                        if (clips.isEmpty()) {
-                            recyclerView.setVisibility(GONE);  // Ocultar RecyclerView si no hay clips
-                            Toast.makeText(getApplicationContext(), "No se detectaron clips", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-
-                        ClipAdapter adapter = new ClipAdapter(clips, GenerateClipsActivity.this);
-                        recyclerView.setAdapter(adapter);
-                        recyclerView.setVisibility(VISIBLE);
-                        preview.setVisibility(1 - GONE); // Ocultar el preview de video
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "Error al leer clips", Toast.LENGTH_LONG).show();
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                runOnUiThread(() -> {
-                    uploadProgress.setVisibility(GONE);
-                    Toast.makeText(getApplicationContext(), "Error al extraer: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
-            }
-        });
-    }
-
 }

@@ -1,6 +1,7 @@
 package Models;
 
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "download_history")
@@ -13,16 +14,19 @@ public class DownloadHistory {
     private String date;
     private String url;
 
+    @Ignore
     public DownloadHistory(String fileName, String format, String date, String url) {
         this.fileName = fileName;
         this.format = format;
         this.date = date;
         this.url = url;
     }
-    public DownloadHistory(){
 
+    public DownloadHistory() {
+        // Constructor sin argumentos que Room usará
     }
-    // Getters and Setters
+
+    // Getters y setters...
     public int getId() {
         return id;
     }

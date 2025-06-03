@@ -1,30 +1,36 @@
 package Adapters;
 
 import android.app.Activity;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.core.content.FileProvider;
 
 import com.example.trabajofinal_ag.R;
 
-import java.io.File;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import Api.ApiUtils;
 import Models.Clip;
 
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.ui.PlayerView;
+
+
 public class ClipAdapter extends RecyclerView.Adapter<ClipAdapter.ClipViewHolder> {
 
     private final List<Clip> clipList;
     private final Activity activity;
+
+    // Mantén una referencia para liberar recursos
+    private final List<ExoPlayer> playerList = new ArrayList<>();
 
     public ClipAdapter(List<Clip> clips, Activity activity) {
         this.clipList = clips;
@@ -43,23 +49,26 @@ public class ClipAdapter extends RecyclerView.Adapter<ClipAdapter.ClipViewHolder
         Clip clip = clipList.get(position);
         holder.clipTimes.setText("Clip del " + formatTime(clip.getStart()) + " al " + formatTime(clip.getEnd()));
 
-        // URL para previsualizar el clip
         String videoUrl = ApiUtils.getBaseUrl() + "preview_clip_stream?filename="
                 + clip.getFileName() + "&start=" + clip.getStart() + "&end=" + clip.getEnd();
 
-        holder.clipVideoView.setVideoPath(videoUrl);
-        holder.clipVideoView.seekTo(1); // Mostrar solo el primer frame
+        // Crear ExoPlayer
+        ExoPlayer player = new ExoPlayer.Builder(activity).build();
 
-        holder.clipVideoView.setOnErrorListener((mp, what, extra) -> {
-            if (!activity.isFinishing() && !activity.isDestroyed()) {
-                new android.app.AlertDialog.Builder(activity)
-                        .setTitle("Error")
-                        .setMessage("No se pudo reproducir el clip de video.")
-                        .setPositiveButton("Aceptar", null)
-                        .show();
-            }
-            return true; // Indica que el error fue manejado
-        });
+        // Preparar MediaItem
+        MediaItem mediaItem = MediaItem.fromUri(videoUrl);
+        player.setMediaItem(mediaItem);
+
+        // Asignar player al PlayerView
+        holder.clipPlayerView.setPlayer(player);
+
+        // Preparar y pausar para mostrar primer frame
+        player.prepare();
+        player.seekTo(1);
+        player.pause();
+
+        // Guardar referencia para liberar después
+        playerList.add(player);
 
         holder.downloadClipBtn.setOnClickListener(v -> {
             ApiUtils.downloadClip(clip, activity);
@@ -72,13 +81,13 @@ public class ClipAdapter extends RecyclerView.Adapter<ClipAdapter.ClipViewHolder
     }
 
     public static class ClipViewHolder extends RecyclerView.ViewHolder {
-        VideoView clipVideoView;
+        PlayerView clipPlayerView;
         TextView clipTimes;
         Button downloadClipBtn;
 
         public ClipViewHolder(@NonNull View itemView) {
             super(itemView);
-            clipVideoView = itemView.findViewById(R.id.clipVideoView);
+            clipPlayerView = itemView.findViewById(R.id.clipPlayerView);
             clipTimes = itemView.findViewById(R.id.clipTimes);
             downloadClipBtn = itemView.findViewById(R.id.downloadClipBtn);
         }
@@ -89,4 +98,13 @@ public class ClipAdapter extends RecyclerView.Adapter<ClipAdapter.ClipViewHolder
         int sec = (int) (seconds % 60);
         return String.format("%02d:%02d", min, sec);
     }
+
+    // Añade método para liberar recursos cuando el RecyclerView se destruya o la activity termine
+    public void releasePlayers() {
+        for (ExoPlayer player : playerList) {
+            player.release();
+        }
+        playerList.clear();
+    }
 }
+

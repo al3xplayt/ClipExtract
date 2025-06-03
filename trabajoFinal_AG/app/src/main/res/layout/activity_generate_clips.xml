@@ -53,9 +53,11 @@
         android:layout_margin="16dp"
         android:scaleType="centerCrop"
         android:src="@android:color/transparent"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/videoUrl" />
+        app:layout_constraintTop_toBottomOf="@id/videoUrl"
+        tools:visibility="gone" />
 
     <Button
         android:id="@+id/extractClip"
@@ -77,8 +79,8 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/clipRecyclerView"
-        android:layout_width="401dp"
-        android:layout_height="235dp"
+        android:layout_width="398dp"
+        android:layout_height="437dp"
         android:layout_marginTop="7dp"
         android:layout_marginBottom="91dp"
         android:padding="8dp"

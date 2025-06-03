@@ -1,8 +1,7 @@
 package Adapters;
 
-import android.content.Context;
+import android.app.Activity;
 import android.net.Uri;
-import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,66 +11,58 @@ import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.core.content.FileProvider;
 
 import com.example.trabajofinal_ag.R;
 
+import java.io.File;
 import java.util.List;
 
-import Models.Clip;
 import Api.ApiUtils;
-import Api.ApiCallback;
-
-import org.json.JSONObject;
+import Models.Clip;
 
 public class ClipAdapter extends RecyclerView.Adapter<ClipAdapter.ClipViewHolder> {
 
-    private List<Clip> clipList;
-    private Context context;
+    private final List<Clip> clipList;
+    private final Activity activity;
 
-    public ClipAdapter(Context context, List<Clip> clips) {
-        this.context = context;
+    public ClipAdapter(List<Clip> clips, Activity activity) {
         this.clipList = clips;
+        this.activity = activity;
     }
 
     @NonNull
     @Override
     public ClipViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_clip, parent, false);
+        View view = LayoutInflater.from(activity).inflate(R.layout.item_clip, parent, false);
         return new ClipViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ClipViewHolder holder, int position) {
         Clip clip = clipList.get(position);
-        holder.clipRange.setText(clip.getFormattedRange());
-        holder.clipVideoView.setOnPreparedListener(mp -> {
-            mp.seekTo((int) (clip.getStart() * 1000)); // posición de inicio en ms
-            mp.setVolume(0f, 0f); // sin sonido para preview, opcional
-            mp.start();
+        holder.clipTimes.setText("Clip del " + formatTime(clip.getStart()) + " al " + formatTime(clip.getEnd()));
 
-            // Detener después del clip
-            new Handler().postDelayed(() -> {
-                if (holder.clipVideoView.isPlaying()) {
-                    holder.clipVideoView.pause();
-                }
-            }, (long) ((clip.getEnd() - clip.getStart()) * 1000));
+        // URL para previsualizar el clip
+        String videoUrl = ApiUtils.getBaseUrl() + "preview_clip_stream?filename="
+                + clip.getFileName() + "&start=" + clip.getStart() + "&end=" + clip.getEnd();
+
+        holder.clipVideoView.setVideoPath(videoUrl);
+        holder.clipVideoView.seekTo(1); // Mostrar solo el primer frame
+
+        holder.clipVideoView.setOnErrorListener((mp, what, extra) -> {
+            if (!activity.isFinishing() && !activity.isDestroyed()) {
+                new android.app.AlertDialog.Builder(activity)
+                        .setTitle("Error")
+                        .setMessage("No se pudo reproducir el clip de video.")
+                        .setPositiveButton("Aceptar", null)
+                        .show();
+            }
+            return true; // Indica que el error fue manejado
         });
 
-        // Botón de descarga
-        holder.downloadBtn.setOnClickListener(v -> {
-            // Llamar al backend para descargar el clip
-            ApiUtils.downloadClip(clip, new ApiCallback() {
-                @Override
-                public void onSuccess(JSONObject response) {
-                    // Aquí puedes mostrar mensaje, actualizar UI, etc.
-                    // La descarga debe guardarse localmente en el dispositivo
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                    // Mostrar error
-                }
-            });
+        holder.downloadClipBtn.setOnClickListener(v -> {
+            ApiUtils.downloadClip(clip, activity);
         });
     }
 
@@ -80,16 +71,22 @@ public class ClipAdapter extends RecyclerView.Adapter<ClipAdapter.ClipViewHolder
         return clipList.size();
     }
 
-    static class ClipViewHolder extends RecyclerView.ViewHolder {
-        TextView clipRange;
+    public static class ClipViewHolder extends RecyclerView.ViewHolder {
         VideoView clipVideoView;
-        Button downloadBtn;
+        TextView clipTimes;
+        Button downloadClipBtn;
 
         public ClipViewHolder(@NonNull View itemView) {
             super(itemView);
-            clipRange = itemView.findViewById(R.id.clipTimes);
             clipVideoView = itemView.findViewById(R.id.clipVideoView);
-            downloadBtn = itemView.findViewById(R.id.downloadClipBtn);
+            clipTimes = itemView.findViewById(R.id.clipTimes);
+            downloadClipBtn = itemView.findViewById(R.id.downloadClipBtn);
         }
+    }
+
+    private String formatTime(double seconds) {
+        int min = (int) (seconds / 60);
+        int sec = (int) (seconds % 60);
+        return String.format("%02d:%02d", min, sec);
     }
 }

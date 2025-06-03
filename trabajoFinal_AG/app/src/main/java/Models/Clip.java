@@ -1,11 +1,23 @@
 package Models;
 
 public class Clip {
-    private double start;
     private double end;
-    private String downloadUrl;
-    public Clip(double start, double end) {
+
+    private double start;
+
+    private String fileName;
+
+    public Clip(String fileName, double start ,double end) {
+        this.end = end;
         this.start = start;
+        this.fileName = fileName;
+    }
+
+    public double getEnd() {
+        return end;
+    }
+
+    public void setEnd(double end) {
         this.end = end;
     }
 
@@ -13,22 +25,15 @@ public class Clip {
         return start;
     }
 
-    public double getEnd() {
-        return end;
-    }
-
-    public double getDuration() {
-        return end - start;
-    }
-
-    public String getFormattedRange() {
-        return String.format("%.2f - %.2f sec", start, end);
-    }
-    public Clip(double start, double end, String downloadUrl) {
+    public void setStart(double start) {
         this.start = start;
-        this.end = end;
-        this.downloadUrl = downloadUrl;
     }
-    public String getDownloadUrl() { return downloadUrl; }
 
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
 }

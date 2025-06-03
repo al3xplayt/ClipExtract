@@ -1,9 +1,14 @@
 package Api;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Environment;
 import android.widget.Toast;
+import android.widget.VideoView;
+
+import androidx.core.content.FileProvider;
 
 import com.example.trabajofinal_ag.DownloadActivity;
 
@@ -11,6 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -264,56 +270,57 @@ public class ApiUtils {
     // -----------------------------
     // DESCARGAR CLIP
     // -----------------------------
-    public static void downloadClip(Clip clip, ApiCallback callback) {
-        // Aquí crea la request para backend con nombre archivo, start y end
-        // Puedes usar OkHttp o Retrofit
-
-        // Ejemplo con OkHttp:
+    public static void downloadClip(Clip clip, Activity activity) {
         OkHttpClient client = new OkHttpClient();
 
         JSONObject json = new JSONObject();
         try {
-            json.put("fileName", clip.getDownloadUrl());
+            json.put("filename", clip.getFileName());
             json.put("start", clip.getStart());
             json.put("end", clip.getEnd());
         } catch (JSONException e) {
-            callback.onFailure(e);
+            e.printStackTrace();
+            activity.runOnUiThread(() ->
+                    Toast.makeText(activity, "Error al preparar descarga", Toast.LENGTH_SHORT).show());
             return;
         }
 
-        RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json"));
+        MediaType JSON = MediaType.get("application/json; charset=utf-8");
+        RequestBody body = RequestBody.create(json.toString(), JSON);
+
         Request request = new Request.Builder()
                 .url(BASE_URL + "/download_clip")
                 .post(body)
                 .build();
 
-        client.newCall(request).enqueue(new okhttp3.Callback() {
+        client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(okhttp3.Call call, IOException e) {
-                callback.onFailure(e);
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                activity.runOnUiThread(() ->
+                        Toast.makeText(activity, "Error al descargar clip", Toast.LENGTH_SHORT).show());
             }
 
             @Override
-            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
+            public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    // Guarda el archivo mp4 en almacenamiento
-                    InputStream is = response.body().byteStream();
-                    // Guarda en disco con FileOutputStream...
-                    // Lógica de guardado aquí
+                    File downloadsDir = new File(activity.getExternalFilesDir(null), "Downloads");
+                    if (!downloadsDir.exists()) downloadsDir.mkdirs();
 
-                    // Notifica éxito
-                    try {
-                        callback.onSuccess(new JSONObject().put("message", "Clip descargado correctamente"));
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
+                    String fileName = clip.getFileName() + "_"+ (int)clip.getStart() +"_"+ (int)clip.getEnd() +".mp4";
+                    File clipFile = new File(downloadsDir, fileName);
+
+                    try (FileOutputStream fos = new FileOutputStream(clipFile)) {
+                        fos.write(response.body().bytes());
                     }
+
+                    activity.runOnUiThread(() ->
+                            Toast.makeText(activity, "Clip descargado en: " + clipFile.getAbsolutePath(), Toast.LENGTH_LONG).show());
                 } else {
-                    callback.onFailure(new Exception("Error en descarga: " + response.message()));
+                    activity.runOnUiThread(() ->
+                            Toast.makeText(activity, "Error en la descarga", Toast.LENGTH_SHORT).show());
                 }
             }
         });
     }
-
-
-
 }

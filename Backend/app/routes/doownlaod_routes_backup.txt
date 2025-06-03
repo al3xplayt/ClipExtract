@@ -49,3 +49,80 @@ def delete():
 _____________________________________________________________________________________________________________________________________________________________________________________
 
 ###V2 asincrono aaaaaaa
+
+from flask import Blueprint, request, jsonify, send_file
+
+from threading import Thread
+from app.services.download_service import download_video, sanitize_filename
+import sys
+import os, uuid
+
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from app.services.download_service import schedule_delete
+
+
+download_bp = Blueprint('download', __name__)
+downloads_in_progress = {}
+
+def download_route():
+    data = request.get_json()
+    url = data.get("url")
+    formato = data.get("format", "mp3")
+
+    download_id = str(uuid.uuid4())
+    downloads_in_progress[download_id] = {"status": "pending", "file_path": None}
+
+    def handle_download():
+        try:
+            file_path = download_video(url, formato)
+            downloads_in_progress[download_id]["status"] = "ready"
+            downloads_in_progress[download_id]["file_path"] = file_path
+        except Exception as e:
+            downloads_in_progress[download_id]["status"] = "error"
+            downloads_in_progress[download_id]["error"] = str(e)
+
+    Thread(target=handle_download).start()
+
+    return jsonify({"download_id": download_id, "status": "pending"}), 202
+
+@download_bp.route("/download_status/<download_id>", methods=["GET"])
+def download_status(download_id):
+    download_info = downloads_in_progress.get(download_id)
+
+    if not download_info:
+        return jsonify({"error": "ID de descarga no encontrado"}), 404
+
+    return jsonify(download_info), 200
+
+@download_bp.route("/download_file/<download_id>", methods=["GET"])
+def download_file(download_id):
+    download_info = downloads_in_progress.get(download_id)
+
+    if not download_info:
+        return jsonify({"error": "ID de descarga no encontrado"}), 404
+
+    if download_info["status"] != "ready":
+        return jsonify({"error": "Archivo no listo"}), 400
+
+    file_path = download_info["file_path"]
+    filename = os.path.basename(file_path)
+
+    # Puedes eliminar el archivo luego si quieres:
+    schedule_delete(filename)
+    return send_file(file_path, as_attachment=True, download_name=sanitize_filename(filename))
+
+
+@download_bp.route('/delete_file', methods=['POST'])
+def delete():
+    data = request.get_json()
+    print("aaaaaaa")
+    file_name = data.get('file_name')
+    print(f"Recibido para eliminar: {file_name}")
+    if not file_name:
+        print("No se proporcionó nombre de archivo")
+        return jsonify({"error": "No se proporcionó nombre de archivo"}), 400
+    print(f"Programando eliminación de: {file_name}")
+    schedule_delete(file_name)
+    return jsonify({"message": f"Archivo '{file_name}' programado para eliminación"}), 200
+
+    

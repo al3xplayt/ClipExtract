@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -168,19 +169,35 @@ public class DownloadActivity extends AppCompatActivity {
                     String fileName;
                     String contentDisposition = response.header("Content-Disposition");
 
-                    if (contentDisposition != null && contentDisposition.contains("filename=")) {
-                        fileName = contentDisposition.split("filename=")[1].replace("\"", "");
+                    if (contentDisposition != null) {
+                        String filenameRegex = "filename\\*=UTF-8''([^;]+)";
+                        Pattern pattern = Pattern.compile(filenameRegex);
+                        Matcher matcher = pattern.matcher(contentDisposition);
+                        Log.d("ContentDisposition", "Header: " + contentDisposition);
+
+                        if (matcher.find()) {
+                            // Decodificamos el filename codificado en UTF-8
+                            fileName = java.net.URLDecoder.decode(matcher.group(1), "UTF-8");
+                        } else if (contentDisposition.contains("filename=")) {
+                            fileName = contentDisposition.split("filename=")[1].replace("\"", "").trim();
+                        } else {
+                            fileName = "video_descargado.mp4";
+                        }
                     } else {
                         fileName = "video_descargado.mp4";
                     }
 
-                    File downloadsDir = new File(getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileName);
+
+                    File downloadsDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileName);
+
 
                     try (BufferedSink sink = Okio.buffer(Okio.sink(downloadsDir))) {
                         sink.writeAll(response.body().source());
+                        Log.d("DownloadSuccess", "Archivo guardado en: " + downloadsDir.getAbsolutePath());
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        Log.e("DownloadError", "Error al guardar archivo", e);
                     }
+
 
                     runOnUiThread(() -> Toast.makeText(DownloadActivity.this, "Archivo guardado en descargas", Toast.LENGTH_SHORT).show());
 

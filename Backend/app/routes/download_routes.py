@@ -26,8 +26,8 @@ def download_page():
             if file_path and os.path.exists(file_path):
                 file = Path("data/temp_files") / os.path.basename(file_path)
                 filename = os.path.basename(file_path)  # Nombre del archivo descargado
-
-                return send_file(file, as_attachment=True, download_name=filename, mimetype='audio/mpeg')
+                type = 'audio/mpeg' if formato == 'mp3' else 'video/mp4'
+                return send_file(file, as_attachment=True, download_name=filename, mimetype=type)
             else:
                 return "No se pudo procesar el archivo.", 500
         except Exception as e:

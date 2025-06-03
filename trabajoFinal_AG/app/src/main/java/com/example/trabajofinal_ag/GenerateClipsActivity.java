@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,6 +25,8 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -39,12 +42,8 @@ import Api.ApiUtils;
 import Api.ApiCallback;
 import Models.Clip;
 
-
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import org.json.JSONArray;
-import org.json.JSONException;
-
 
 public class GenerateClipsActivity extends AppCompatActivity {
 
@@ -53,15 +52,16 @@ public class GenerateClipsActivity extends AppCompatActivity {
     BottomNavigationView bottomNavigationView;
     ProgressBar uploadProgress;
     Button extractClipsButton;
-
+    ImageView preview;
     private File uploadedFile = null;  // ← para guardar el archivo subido
+
+    private RecyclerView recyclerView; // RecyclerView declarado a nivel clase
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_generate_clips);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_generate_clips);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -74,6 +74,11 @@ public class GenerateClipsActivity extends AppCompatActivity {
         bottomNavigationView.setSelectedItemId(R.id.nav_clip);
         extractClipsButton = findViewById(R.id.extractClip);
         extractClipsButton.setEnabled(false); // desactivado hasta que se suba el video
+
+        recyclerView = findViewById(R.id.clipRecyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(new ClipAdapter(new ArrayList<>(), this)); // Adapter vacío inicial
+        recyclerView.setVisibility(GONE);  // Oculto inicialmente
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -132,7 +137,7 @@ public class GenerateClipsActivity extends AppCompatActivity {
                 MediaStore.Video.Thumbnails.MINI_KIND
         );
         runOnUiThread(() -> {
-            ImageView preview = findViewById(R.id.previewThumbnail);
+            preview = findViewById(R.id.previewThumbnail);
             preview.setImageBitmap(thumbnail);
         });
     }
@@ -200,25 +205,26 @@ public class GenerateClipsActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     uploadProgress.setVisibility(GONE);
                     try {
+                        String fileName = response.getString("filename");
                         JSONArray clipsArray = response.getJSONArray("clips");
                         List<Clip> clips = new ArrayList<>();
                         for (int i = 0; i < clipsArray.length(); i++) {
                             JSONObject obj = clipsArray.getJSONObject(i);
                             double start = obj.getDouble("start");
                             double end = obj.getDouble("end");
-                            clips.add(new Clip(start, end));
+                            clips.add(new Clip(fileName, start, end));
                         }
 
                         if (clips.isEmpty()) {
+                            recyclerView.setVisibility(GONE);  // Ocultar RecyclerView si no hay clips
                             Toast.makeText(getApplicationContext(), "No se detectaron clips", Toast.LENGTH_LONG).show();
                             return;
                         }
 
-                        RecyclerView recyclerView = findViewById(R.id.clipRecyclerView);
-                        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-                        recyclerView.setAdapter(new ClipAdapter(getApplicationContext()  ,clips));
+                        ClipAdapter adapter = new ClipAdapter(clips, GenerateClipsActivity.this);
+                        recyclerView.setAdapter(adapter);
                         recyclerView.setVisibility(VISIBLE);
-
+                        preview.setVisibility(1 - GONE); // Ocultar el preview de video
                     } catch (JSONException e) {
                         e.printStackTrace();
                         Toast.makeText(getApplicationContext(), "Error al leer clips", Toast.LENGTH_LONG).show();

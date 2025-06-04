@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from werkzeug.utils import secure_filename
+
 from app.config import UPLOAD_FOLDER
 import os
 
@@ -26,9 +26,8 @@ def upload_file():
     if not allowed_file(file.filename):
         return jsonify({"error": "Archivo no permitido"}), 400
 
-    filename = secure_filename(file.filename)
+    filename = (file.filename)
     file_path = os.path.join(UPLOAD_FOLDER, filename)
-    print(f"Ruta del archivo: {file_path} con nombre: {filename}")
     file.save(file_path)
 
     return jsonify({

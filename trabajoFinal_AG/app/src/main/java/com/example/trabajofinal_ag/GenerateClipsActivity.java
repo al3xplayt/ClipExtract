@@ -4,6 +4,7 @@ import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
@@ -11,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -60,6 +62,8 @@ public class GenerateClipsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
 
+    private SharedPreferences prefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,6 +90,8 @@ public class GenerateClipsActivity extends AppCompatActivity {
         recyclerView.setAdapter(clipAdapter);
         recyclerView.setVisibility(GONE);
 
+        prefs = getSharedPreferences("user_data", MODE_PRIVATE);
+        String userName = prefs.getString("user_name", null);
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
@@ -95,8 +101,14 @@ public class GenerateClipsActivity extends AppCompatActivity {
                 startActivity(new Intent(this, HistoryActivity.class));
                 return true;
             } else if (itemId == R.id.nav_profile) {
-                startActivity(new Intent(this, LogInActivity.class));
-                return true;
+                if (userName == null || userName.equals("null")) {
+                    startActivity(new Intent(this, LogInActivity.class));
+                    return true;
+                } else {
+                    // Añadir activity para actualizar informacion de usuario
+                    startActivity(new Intent(this, ProfileActivity.class));
+                    return true;
+                }
             }
             return false;
         });
@@ -152,7 +164,13 @@ public class GenerateClipsActivity extends AppCompatActivity {
                         preview.setVisibility(GONE);
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "Error al leer clips", Toast.LENGTH_LONG).show();
+                        String erroLog = "error";
+                        try {
+                             erroLog = response.getString("message");
+                        } catch (JSONException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        Toast.makeText(getApplicationContext(), erroLog, Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -181,10 +199,13 @@ public class GenerateClipsActivity extends AppCompatActivity {
             File file = getFileFromUri(selectedUri);
 
             if (file != null) {
+                recyclerView.setVisibility(GONE); // Oculta los clips anteriores
+                if (preview != null) preview.setVisibility(VISIBLE); // Muestra el thumbnail
                 showVideoThumbnail(file);
                 uploadedFile = file;
                 uploadFile(file);
-            } else {
+            }
+            else {
                 Toast.makeText(this, "Error al leer el archivo", Toast.LENGTH_SHORT).show();
             }
         }
@@ -235,13 +256,31 @@ public class GenerateClipsActivity extends AppCompatActivity {
 
     private void uploadFile(File file) {
         uploadProgress.setVisibility(VISIBLE);
+
         ApiUtils.uploadFile(file, new ApiCallback() {
             @Override
             public void onSuccess(JSONObject response) {
                 runOnUiThread(() -> {
                     uploadProgress.setVisibility(GONE);
-                    extractClipsButton.setEnabled(true); // habilitar botón
+                    extractClipsButton.setEnabled(true);
                     Toast.makeText(getApplicationContext(), "Video subido correctamente", Toast.LENGTH_SHORT).show();
+                });
+
+                // Registrar upload en backend
+                SharedPreferences prefs = getSharedPreferences("user_data", MODE_PRIVATE);
+                String userName = prefs.getString("user_name", "null");
+
+                ApiUtils.registerUpload(userName, file.getName(), "path_en_servidor_o_relativo", "completed", new ApiCallback() {
+                    @Override
+                    public void onSuccess(JSONObject response) {
+                        Log.e("Upload", "Registro de subida exitoso: " + response.toString());
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        // Log de error si quieres
+                        Log.e("Upload", "Error al registrar subida: " + e.getMessage());
+                    }
                 });
             }
 
@@ -254,4 +293,5 @@ public class GenerateClipsActivity extends AppCompatActivity {
             }
         });
     }
+
 }

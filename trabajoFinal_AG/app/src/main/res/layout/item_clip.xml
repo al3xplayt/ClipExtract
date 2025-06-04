@@ -20,7 +20,8 @@
             android:layout_height="200dp"
             android:layout_marginTop="8dp"
             app:show_buffering="when_playing"
-            app:use_controller="false" />
+            app:use_controller="true" />
+
 
         <TextView
             android:id="@+id/clipTimes"

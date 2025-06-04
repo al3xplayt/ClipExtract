@@ -61,7 +61,7 @@ public class LogInActivity extends AppCompatActivity {
         invitado.setOnClickListener(v -> {
             Intent intent = new Intent(LogInActivity.this, DownloadActivity.class);
             SharedPreferences.Editor editor = getSharedPreferences("user_data", MODE_PRIVATE).edit();
-            editor.putString("user_name", "null");
+            editor.putString("user_name", null);
             editor.apply();
             startActivity(intent);
             finish();

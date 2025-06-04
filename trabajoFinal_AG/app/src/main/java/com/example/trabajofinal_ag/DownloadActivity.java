@@ -18,6 +18,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -123,6 +124,7 @@ public class DownloadActivity extends AppCompatActivity {
             }
         });
 
+
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
@@ -130,11 +132,36 @@ public class DownloadActivity extends AppCompatActivity {
                 startActivity(new Intent(DownloadActivity.this, HistoryActivity.class));
                 return true;
             } else if (itemId == R.id.nav_profile) {
-                startActivity(new Intent(this, LogInActivity.class));
-                return true;
+                if (userName == null || userName.equals("null")) {
+                    startActivity(new Intent(this, LogInActivity.class));
+                    return true;
+                } else {
+                    // Añadir activity para actualizar informacion de usuario
+                    startActivity(new Intent(this, ProfileActivity.class));
+                    return true;
+                }
             } else if (itemId == R.id.nav_clip) {
-                startActivity(new Intent(this, GenerateClipsActivity.class));
-                return true;
+
+                if (userName == null) {
+                    // Mostrar alerta si no está logueado
+                    new AlertDialog.Builder(this)
+                            .setTitle("Acceso restringido")
+                            .setMessage("Debes iniciar sesión para acceder a esta función.")
+                            .setPositiveButton("Aceptar", (dialog, which) -> {
+                                dialog.dismiss(); // Cierra el diálogo
+                            })
+                            .setNegativeButton("Iniciar sesión", (dialog, which) -> {
+                                startActivity(new Intent(this, LogInActivity.class));
+                                dialog.dismiss();
+                            })
+                            .show();
+
+                    return true;
+                } else {
+                    // Si está logueado, puede acceder
+                    startActivity(new Intent(this, GenerateClipsActivity.class));
+                    return true;
+                }
             }
             return false;
         });
@@ -202,9 +229,9 @@ public class DownloadActivity extends AppCompatActivity {
                     runOnUiThread(() -> Toast.makeText(DownloadActivity.this, "Archivo guardado en descargas", Toast.LENGTH_SHORT).show());
 
                     SharedPreferences prefs = getSharedPreferences("user_data", MODE_PRIVATE);
-                    String userName = prefs.getString("user_name", "null");
+                    String userName = prefs.getString("user_name", null);
 
-                    if (userName.equals("null")) {
+                    if (userName == null || userName.equals("null")) {
                         String currentDate = getCurrentDate();
                         saveDownloadHistory(fileName, format.toUpperCase(), currentDate, urlText);
                         notifyServerFileDownloaded(fileName);

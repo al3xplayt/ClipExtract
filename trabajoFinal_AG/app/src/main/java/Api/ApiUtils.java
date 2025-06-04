@@ -1,25 +1,14 @@
 package Api;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Environment;
 import android.widget.Toast;
-import android.widget.VideoView;
-
-import androidx.core.content.FileProvider;
-
-import com.example.trabajofinal_ag.DownloadActivity;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-
 import Models.Clip;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -30,9 +19,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okio.BufferedSink;
-import okio.Okio;
-
 public class ApiUtils {
 
     // ApiUtils.java
@@ -322,4 +308,96 @@ public class ApiUtils {
             }
         });
     }
+
+    // -----------------------------
+    // REGISTRAR VIDEO EN LA BASE DE DATOS
+    // -----------------------------
+    public static void registerUpload(String username, String filename, String path, String status, ApiCallback callback) {
+        // Construir JSON
+        JSONObject json = new JSONObject();
+        try {
+            json.put("username", username);
+            json.put("filename", filename);
+            json.put("path", path);
+            json.put("status", status != null ? status : "pending");
+        } catch (JSONException e) {
+            callback.onFailure(e);
+            return;
+        }
+
+        RequestBody body = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
+
+        Request request = new Request.Builder()
+                .url(BASE_URL + "upload/register")
+                .post(body)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onFailure(e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    try {
+                        String respBody = response.body().string();
+                        callback.onSuccess(new JSONObject(respBody));
+                    } catch (Exception e) {
+                        callback.onFailure(e);
+                    }
+                } else {
+                    callback.onFailure(new IOException("Error al registrar subida: " + response.code()));
+                }
+            }
+        });
+    }
+
+    // -----------------------------
+    // REGISTRAR CLIP EN LA BASE DE DATOS
+    // -----------------------------
+    public static void registerClip(int videoId, String startTime, String endTime, String clipPath, int userId, ApiCallback callback) {
+        JSONObject json = new JSONObject();
+        try {
+            json.put("video_id", videoId);
+            json.put("start_time", startTime);
+            json.put("end_time", endTime);
+            json.put("clip_path", clipPath);
+            json.put("user_id", userId);
+        } catch (JSONException e) {
+            callback.onFailure(e);
+            return;
+        }
+
+        RequestBody body = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
+
+        Request request = new Request.Builder()
+                .url(BASE_URL + "clip/register")
+                .post(body)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onFailure(e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    try {
+                        String respBody = response.body().string();
+                        callback.onSuccess(new JSONObject(respBody));
+                    } catch (Exception e) {
+                        callback.onFailure(e);
+                    }
+                } else {
+                    callback.onFailure(new IOException("Error al registrar clip: " + response.code()));
+                }
+            }
+        });
+    }
+
+
 }

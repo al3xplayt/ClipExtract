@@ -11,6 +11,7 @@ class Usuario(Base):
     apellidos = Column(String(100), nullable=True)
     user = Column(String(36), nullable=False, unique=True)
 
+
 class DownloadHistory(Base):
     __tablename__ = 'historial_descargas'
     

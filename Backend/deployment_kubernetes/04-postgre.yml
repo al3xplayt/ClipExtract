@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clipextract-PostgreSQL
+  namespace: clipExtract-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clipextract-backend
+  template:
+    metadata:
+      labels:
+        app: clipextract-backend
+    spec:
+      containers:
+        - name: clipextract-PostgreSQL
+          image: postgres:latest
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: password
+            - name: POSTGRES_DB
+              value: "clipextract_db"
+          volumeMounts:
+            - name: postgresql-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: postgresql-pvc

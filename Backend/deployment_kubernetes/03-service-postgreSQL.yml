@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: service
+metadata:
+  name: svc-PostgreSQL
+  namespace: clipExtract-backend
+spec:
+  selector:
+    app: clipextract-backend
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  # The PostgreSQL service is typically exposed on port 5432
+  type: ClusterIP

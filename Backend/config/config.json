@@ -1,0 +1,8 @@
+{
+  "auths": {
+    "registry.gitlab.com": {
+      "username": "alejandrogape05@gmail.com",
+      "password": "CI_JOB_TOKEN"
+    }
+  }
+}

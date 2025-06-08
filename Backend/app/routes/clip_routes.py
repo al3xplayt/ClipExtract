@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, send_file, stream_with_context, Response
 from app.utils.video_processing import detect_scene_changes
-from app.config import UPLOAD_FOLDER, TEMP_FILES_DIR  
+from app.config import UPLOAD_FOLDER, TEMP_CLIPS_DIR as TEM  
 import os, subprocess
 from app.database import SessionLocal
 from app.models.models import Video
@@ -47,7 +47,7 @@ def download_clip():
 
     # Archivo temporal para el clip recortado
     clip_filename = f"clip_{os.path.splitext(filename)[0]}_{int(start)}_{int(end)}.mp4"
-    clip_path = os.path.join(TEMP_FILES_DIR, clip_filename)
+    clip_path = os.path.join(TEM, clip_filename)
 
     # Comando ffmpeg para recortar el video
     # -ss start, -to end indica el segmento a extraer

@@ -3,7 +3,7 @@ from sqlalchemy import or_
 from app.models.models import *
 from sqlalchemy.exc import SQLAlchemyError
 from app.config import UPLOAD_FOLDER
-import json
+import json, os
 
 def subir_descarga(db: Session, video_url: str, filename: str, user: str, formato: str):
     try:
@@ -57,23 +57,32 @@ def registrar_subida(db: Session, data: json):
     
 def registrar_clip(db: Session, data: json):
     try:
-        video_id = data.get("video_id")
-        video = db.query(Video).filter(Video.id == video_id).first()
+        video_filename = data.get("filename")
+        print(f"Registrando clip para video: {video_filename}")
+        video = db.query(Video).filter(Video.filename == video_filename).first()
         if not video:
-            print(f"Video con ID {video_id} no encontrado.")
+            print(f"Video no encontrado con filename: {video_filename}")
             return None  # Video no encontrado
+
         start_time = data.get("start_time")
         end_time = data.get("end_time")
-        clip_path = data.get("clip_path")
-        user_id = data.get("user_id")
-        
-        #Registrar el clip
-        nuevo_clip = Clip(video_id=video_id, start_time=start_time, end_time=end_time, clip_path=clip_path, user_id=user_id)
+        clip_path = os.path.join(UPLOAD_FOLDER, f"clip_{video_filename}_{start_time}_{end_time}.mp4")
+        userName = data.get("username")
+        user = db.query(Usuario).filter(Usuario.user == userName).first()
+
+        nuevo_clip = Clip(
+            video_id=video.id,
+            start_time=start_time,
+            end_time=end_time,
+            clip_path=clip_path,
+            user_id=user.id
+        )
         db.add(nuevo_clip)
         db.commit()
         db.refresh(nuevo_clip)
         return nuevo_clip
+
     except SQLAlchemyError as e:
-        db.rollback()  # Hacer rollback en caso de error en la base de datos
+        db.rollback()
         print(f"Error al registrar clip: {str(e)}")
-        return None  # Error general de base de datos
+        return None

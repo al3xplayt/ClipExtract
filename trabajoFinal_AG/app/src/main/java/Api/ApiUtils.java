@@ -1,8 +1,11 @@
 package Api;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Environment;
+import android.util.Log;
 import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,7 +39,7 @@ public class ApiUtils {
         return BASE_URL;
     }
 
-
+    private static SharedPreferences prefs ;
     private static final OkHttpClient client = new OkHttpClient();
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
@@ -256,7 +259,7 @@ public class ApiUtils {
     // -----------------------------
     // DESCARGAR CLIP
     // -----------------------------
-    public static void downloadClip(Clip clip, Activity activity) {
+    public static void downloadClip(Clip clip, Activity activity, String username) {
         OkHttpClient client = new OkHttpClient();
 
         JSONObject json = new JSONObject();
@@ -291,8 +294,7 @@ public class ApiUtils {
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
 
-
-                    String fileName = clip.getFileName() + "_"+ (int)clip.getStart() +"_"+ (int)clip.getEnd() +".mp4";
+                    String fileName = clip.getFileName();
                     File clipFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileName);
 
                     try (FileOutputStream fos = new FileOutputStream(clipFile)) {
@@ -301,6 +303,27 @@ public class ApiUtils {
 
                     activity.runOnUiThread(() ->
                             Toast.makeText(activity, "Clip descargado en: " + clipFile.getAbsolutePath(), Toast.LENGTH_LONG).show());
+
+                    // Aquí llamamos a registerClip pasando los parámetros reales
+
+                    registerClip(
+                            username,
+                            clip,
+                            new ApiCallback() {
+                                @Override
+                                public void onSuccess(JSONObject response) {
+                                    activity.runOnUiThread(() ->
+                                            Toast.makeText(activity, "Clip registrado correctamente", Toast.LENGTH_SHORT).show());
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+                                    activity.runOnUiThread(() ->
+                                            Toast.makeText(activity, "Error al registrar clip: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                                }
+                            }
+                    );
+
                 } else {
                     activity.runOnUiThread(() ->
                             Toast.makeText(activity, "Error en la descarga", Toast.LENGTH_SHORT).show());
@@ -308,6 +331,7 @@ public class ApiUtils {
             }
         });
     }
+
 
     // -----------------------------
     // REGISTRAR VIDEO EN LA BASE DE DATOS
@@ -357,14 +381,14 @@ public class ApiUtils {
     // -----------------------------
     // REGISTRAR CLIP EN LA BASE DE DATOS
     // -----------------------------
-    public static void registerClip(int videoId, String startTime, String endTime, String clipPath, int userId, ApiCallback callback) {
+    public static void registerClip(String username, Clip clip, ApiCallback callback) {
         JSONObject json = new JSONObject();
+        Log.e("ApiUtils", "Registering clip: " + clip.getFileName() + " from " + clip.getStart() + " to " + clip.getEnd());
         try {
-            json.put("video_id", videoId);
-            json.put("start_time", startTime);
-            json.put("end_time", endTime);
-            json.put("clip_path", clipPath);
-            json.put("user_id", userId);
+            json.put("filename", clip.getFileName());
+            json.put("start_time", clip.getStart());
+            json.put("end_time", clip.getEnd());
+            json.put("username", username);
         } catch (JSONException e) {
             callback.onFailure(e);
             return;
@@ -399,5 +423,42 @@ public class ApiUtils {
         });
     }
 
+    // -----------------------------
+    // OBTENER HISTORIAL DE CLIPS
+    // -----------------------------
+
+    public static void fetchClipHistory(String userName, ApiCallback callback) {
+        OkHttpClient client = new OkHttpClient();
+        HttpUrl url = HttpUrl.parse(BASE_URL + "/get_clip_history")
+                .newBuilder()
+                .addQueryParameter("username", userName)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onFailure(e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    try {
+                        String jsonData = response.body().string();
+                        JSONObject json = new JSONObject(jsonData);
+                        callback.onSuccess(json);
+                    } catch (JSONException e) {
+                        callback.onFailure(e);
+                    }
+                } else {
+                    callback.onFailure(new IOException("Error en la respuesta"));
+                }
+            }
+        });
+    }
 
 }

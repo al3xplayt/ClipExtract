@@ -68,8 +68,6 @@ def register_upload():
 
     usuer_id = db.query(Usuario).filter(Usuario.user == username).first()
     data["user_id"] = usuer_id.id if usuer_id else None
-    print(f"Datos recibidos para registrar subida: {data}")
-    print(f"ID de usuario: {data['user_id']}")
     nuevo_video = None
     try:
         # Aquí reutilizamos el servicio
@@ -98,11 +96,11 @@ def register_clip():
     db = SessionLocal()
     data = request.get_json()
     if not data:
-        return jsonify({"success": False, "message": "Datos JSON requeridos"}), 400
+        return jsonify({"success": False, "message": "Datos JSON requeridos"}), 401
 
-    video_id = data.get("video_id")
-    if not video_id:
-        return jsonify({"success": False, "message": "video_id es obligatorio"}), 400
+    video_filename = data.get("filename")
+    if not video_filename:
+        return jsonify({"success": False, "message": "filename es obligatorio"}), 402
 
     try:
         nuevo_clip = registrar_clip(db, data)
@@ -125,3 +123,4 @@ def register_clip():
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
         db.close()
+

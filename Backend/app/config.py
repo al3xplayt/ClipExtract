@@ -1,6 +1,4 @@
 import os
-from flask_cors import CORS
-from flask import Flask
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 

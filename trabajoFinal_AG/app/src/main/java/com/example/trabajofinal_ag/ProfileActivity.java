@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONException;
@@ -31,15 +32,19 @@ public class ProfileActivity extends AppCompatActivity {
     private final OkHttpClient client = new OkHttpClient();
 
     private final String API_BASE_URL = ApiUtils.getBaseUrl();
+
+    private Button btnLogout;
     SharedPreferences prefs;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+        EdgeToEdge.enable(this);
 
         etUserName = findViewById(R.id.etUserName);
         etEmail = findViewById(R.id.etEmail);
         btnSave = findViewById(R.id.btnSave);
+        btnLogout = findViewById(R.id.logout);
 
         // Obtener datos pasados desde DownloadActivity (opcional)
         prefs = getSharedPreferences("user_data", MODE_PRIVATE);
@@ -58,6 +63,12 @@ public class ProfileActivity extends AppCompatActivity {
             }
 
             updateUserProfile(userName ,updatedUserName, updatedEmail);
+        });
+
+        btnLogout.setOnClickListener(v -> {
+            prefs.edit().putString("user_name", null).apply();
+            Toast.makeText(ProfileActivity.this, "Sesión cerrada", Toast.LENGTH_SHORT).show();
+            finish();
         });
     }
 

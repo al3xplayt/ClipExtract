@@ -3,6 +3,7 @@ package com.example.trabajofinal_ag;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
@@ -85,6 +86,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 finish();
                             } else{
                                 String errorMessage = response.getString("message");
+                                Log.e("RegisterActivity", "Error de registro: " + errorMessage);
                                 Toast.makeText(RegisterActivity.this, errorMessage , Toast.LENGTH_SHORT).show();
                             }
 
@@ -97,6 +99,7 @@ public class RegisterActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Exception e) {
+                    String errorMessage = e.getMessage();
                     runOnUiThread(() -> Toast.makeText(RegisterActivity.this, "Error de red", Toast.LENGTH_SHORT).show());
                 }
             });

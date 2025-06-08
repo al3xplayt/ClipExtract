@@ -1,6 +1,7 @@
 package Adapters;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,9 +70,10 @@ public class ClipAdapter extends RecyclerView.Adapter<ClipAdapter.ClipViewHolder
 
         // Guardar referencia para liberar después
         playerList.add(player);
-
+        SharedPreferences sharedPreferences = activity.getSharedPreferences("user_data", Activity.MODE_PRIVATE);
+        String username = sharedPreferences.getString("user_name", null);
         holder.downloadClipBtn.setOnClickListener(v -> {
-            ApiUtils.downloadClip(clip, activity);
+            ApiUtils.downloadClip(clip, activity, username);
         });
     }
 

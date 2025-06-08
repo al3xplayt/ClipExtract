@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-db-sql
+  namespace: clipExtract-backend
+data:
+  init.sql: |
+    -- Table: public.clips
+    -- DROP TABLE IF EXISTS public.clips;
+    -- Table Usuarios
+    CREATE TABLE IF NOT EXISTS public.usuarios
+    (
+        id integer NOT NULL DEFAULT nextval('usuarios_id_seq'::regclass),
+        nombre character varying(100) COLLATE pg_catalog."default" NOT NULL,
+        email character varying(100) COLLATE pg_catalog."default" NOT NULL,
+        contrasena character varying(255) COLLATE pg_catalog."default" NOT NULL,
+        fecha_creacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+        fecha_actualizacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+        "user" character varying(36) COLLATE pg_catalog."default",
+        apellidos character varying(100) COLLATE pg_catalog."default",
+        CONSTRAINT usuarios_pkey PRIMARY KEY (id),
+        CONSTRAINT usuario_usrname_key UNIQUE ("user"),
+        CONSTRAINT usuarios_email_key UNIQUE (email),
+        CONSTRAINT email_format CHECK (email::text ~* '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'::text)
+    )
+
+    TABLESPACE pg_default;
+
+    ALTER TABLE IF EXISTS public.usuarios
+        OWNER to postgres;
+
+    -- Table Videos
+    -- Table: public.videos
+
+    -- DROP TABLE IF EXISTS public.videos;
+
+    CREATE TABLE IF NOT EXISTS public.videos
+    (
+        id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+        filename text COLLATE pg_catalog."default" NOT NULL,
+        upload_time timestamp without time zone DEFAULT now(),
+        status text COLLATE pg_catalog."default" NOT NULL DEFAULT 'pending'::text,
+        path text COLLATE pg_catalog."default" NOT NULL,
+        user_id integer NOT NULL,
+        CONSTRAINT pk_video_id PRIMARY KEY (id),
+        CONSTRAINT fk_user FOREIGN KEY (user_id)
+            REFERENCES public.usuarios (id) MATCH SIMPLE
+            ON UPDATE NO ACTION
+            ON DELETE NO ACTION
+    )
+
+    TABLESPACE pg_default;
+
+    ALTER TABLE IF EXISTS public.videos
+        OWNER to postgres;
+    -- Table Clips
+    CREATE TABLE IF NOT EXISTS public.clips
+    (
+        id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+        video_id integer NOT NULL,
+        start_time double precision NOT NULL,
+        end_time double precision NOT NULL,
+        clip_path text COLLATE pg_catalog."default" NOT NULL,
+        created_at timestamp without time zone DEFAULT now(),
+        user_id integer NOT NULL,
+        CONSTRAINT clips_pkey PRIMARY KEY (id),
+        CONSTRAINT fk_user FOREIGN KEY (user_id)
+            REFERENCES public.usuarios (id) MATCH SIMPLE
+            ON UPDATE NO ACTION
+            ON DELETE CASCADE,
+        CONSTRAINT fk_video FOREIGN KEY (video_id)
+            REFERENCES public.videos (id) MATCH SIMPLE
+            ON UPDATE NO ACTION
+            ON DELETE CASCADE
+    )
+
+    TABLESPACE pg_default;
+
+    ALTER TABLE IF EXISTS public.clips
+        OWNER to postgres;
+
+    -- Table downloads
+    -- Table: public.historial_descargas
+
+    -- DROP TABLE IF EXISTS public.historial_descargas;
+
+    CREATE TABLE IF NOT EXISTS public.historial_descargas
+    (
+        id integer NOT NULL DEFAULT nextval('historial_descargas_id_seq'::regclass),
+        usuario_id integer,
+        video_url character varying(252) COLLATE pg_catalog."default" NOT NULL,
+        fecha_descarga timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+        filename character varying(250) COLLATE pg_catalog."default" NOT NULL,
+        formato character(3) COLLATE pg_catalog."default" NOT NULL,
+        CONSTRAINT historial_descargas_pkey PRIMARY KEY (id),
+        CONSTRAINT user_id_fk FOREIGN KEY (usuario_id)
+            REFERENCES public.usuarios (id) MATCH SIMPLE
+            ON UPDATE NO ACTION
+            ON DELETE NO ACTION
+            NOT VALID
+    )
+
+    TABLESPACE pg_default;
+
+    ALTER TABLE IF EXISTS public.historial_descargas
+        OWNER to postgres;
+

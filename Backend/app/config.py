@@ -5,7 +5,8 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardi
 TEMP_FILES_DIR = os.path.join(BASE_DIR, r'data\temp_files')
 UPLOAD_FOLDER = os.path.join(BASE_DIR, r'data\uploads')
 TEMP_CLIPS_DIR = os.path.join(BASE_DIR, r'data\temp_clips')
-DATABASE_URL = "postgresql+psycopg2://admin:admin@localhost:5432/ClipExtract"
+#DATABASE_URL = "postgresql+psycopg2://admin:admin@localhost:5432/ClipExtract" For local development
+DATABASE_URL = os.environ.get("DATABASE_URL")  # For Docker deployment
 
 def configure_app(app):
     for path in [TEMP_FILES_DIR, UPLOAD_FOLDER, TEMP_CLIPS_DIR]:

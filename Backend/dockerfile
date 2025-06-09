@@ -1,15 +1,7 @@
-# Imagen base ligera con Python
+# ¡No necesitas apt-get install nada!
 FROM python:3.10-slim
 
-# Establecer el directorio de trabajo dentro del contenedor
 WORKDIR /app
-
-# Instalar dependencias del sistema necesarias para psycopg2 y compilación
-RUN apt-get update && apt-get install -y \
-    gcc \
-    libpq-dev \
-    python3-dev \
-  && rm -rf /var/lib/apt/lists/*
 
 # Copiar dependencias y luego instalar (mejor para cache)
 COPY requirements.txt .
@@ -18,8 +10,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar el resto del código
 COPY . .
 
-# Exponer el puerto que usa Flask
 EXPOSE 50010
 
-# Comando para ejecutar la app
 CMD ["python", "main.py"]

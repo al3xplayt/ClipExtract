@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: clipextract-backend
-          image: registry.gitlab.com/al3xplayt-group/clipextract:504d66de
+          image: registry.gitlab.com/al3xplayt-group/clipextract:5d96af11
           ports:
             - containerPort: 50010
           env:

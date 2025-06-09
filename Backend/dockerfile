@@ -1,15 +1,24 @@
-# ¡No necesitas apt-get install nada!
+# Imagen base ligera con Python
 FROM python:3.10-slim
 
+# Establecer el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar dependencias y luego instalar (mejor para cache)
+# Instalar dependencias del sistema necesarias para OpenCV
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+  && rm -rf /var/lib/apt/lists/*
+
+# Copiar dependencias y luego instalar
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar el resto del código
 COPY . .
 
+# Exponer el puerto
 EXPOSE 50010
 
+# Comando para ejecutar la app
 CMD ["python", "main.py"]

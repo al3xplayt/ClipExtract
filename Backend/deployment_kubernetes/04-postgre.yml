@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: clipextract-PostgreSQL
-  namespace: clipExtract-backend
+  name: clipextract-postgresql
+  namespace: clipextract-backend
 spec:
   replicas: 1
   selector:
@@ -14,7 +14,7 @@ spec:
         app: clipextract-backend
     spec:
       containers:
-        - name: clipextract-PostgreSQL
+        - name: clipextract-postgresql-pod
           image: postgres:latest
           ports:
             - containerPort: 5432

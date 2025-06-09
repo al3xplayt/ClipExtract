@@ -1,7 +1,3 @@
-Tu fragmento del README está bastante claro, pero puede mejorarse para mayor profesionalidad, legibilidad y precisión técnica. Aquí tienes una versión mejorada, seguida de sugerencias para cómo continuarlo:
-
----
-
 # 🎬 ClipExtract
 
 **ClipExtract** es una aplicación que permite **descargar vídeos y audios de YouTube**, así como **extraer clips destacados automáticamente** mediante técnicas de inteligencia artificial. Está compuesta por una app Android y un backend en Python (Flask) con PostgreSQL y FFmpeg.

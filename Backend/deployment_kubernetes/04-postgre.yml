@@ -7,11 +7,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: clipextract-backend
+      app: clipextract-postgresql
   template:
     metadata:
       labels:
-        app: clipextract-backend
+        app: clipextract-postgresql
     spec:
       containers:
         - name: clipextract-postgresql-pod

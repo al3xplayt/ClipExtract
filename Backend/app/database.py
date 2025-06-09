@@ -2,10 +2,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
 import os
-load_dotenv()
-db_url = os.getenv("DATABASE_URL")
+db_url = os.getenv("DATABASE_URL", "se ha intentado")
+print(db_url)
 engine = create_engine(db_url)
 
 # Crear sesión local

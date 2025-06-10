@@ -14,7 +14,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar el resto del código
-COPY . .
+COPY main.py .
+COPY src/ src/
 
 EXPOSE 50010
 

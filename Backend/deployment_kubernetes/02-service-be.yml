@@ -8,6 +8,7 @@ spec:
     app: clipextract-backend
   ports:
     - protocol: TCP
-      port: 50010
-      targetPort: 50010
-  type: ClusterIP
+      port: 50010         # Puerto interno del Service
+      targetPort: 50010   # Puerto del contenedor
+      nodePort: 30080     # Puerto en el nodo para exponer 
+  type: NodePort

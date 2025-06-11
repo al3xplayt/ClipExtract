@@ -7,30 +7,26 @@ import json
 
 def crear_usuario(db: Session, nombre: str, apellido: str, email: str, contrasena: str, user: str):
     try:
-        # Verifica si ya existe el usuario
-        usuario_en_uso = db.query(Usuario).filter((Usuario.user == user)
-        ).first()
+        usuario_en_uso = db.query(Usuario).filter(Usuario.user == user).first()
+        correo_en_uso = db.query(Usuario).filter(Usuario.email == email).first()
 
-        correo_en_uso = db.query(Usuario).filter(
-            or_(Usuario.email == email)
-        ).first()
         if usuario_en_uso:
-            return {"message": "El nombre de usuario ya etsa en uso."}
+            return {"success": False, "message": "El nombre de usuario ya está en uso."}
         if correo_en_uso:
-            return {"message": "El correo electrónico ya está en uso."} 
+            return {"success": False, "message": "El correo electrónico ya está en uso."}
 
         hash_pass = generate_password_hash(contrasena)
-
-        nuevo_usuario = Usuario(nombre=nombre,apellidos=apellido, email=email, contrasena=hash_pass, user=user)
+        nuevo_usuario = Usuario(nombre=nombre, apellidos=apellido, email=email, contrasena=hash_pass, user=user)
         db.add(nuevo_usuario)
         db.commit()
         db.refresh(nuevo_usuario)
 
-        return nuevo_usuario
+        return {"success": True, "usuario": nuevo_usuario}
     except SQLAlchemyError as e:
-        db.rollback()  # Hacer rollback en caso de error en la base de datos
+        db.rollback()
         print(f"Error al crear usuario: {str(e)}")
-        return {"error": "Error en la base de datos al crear usuario."}  # Error general de base de datos
+        return {"success": False, "message": "Error en la base de datos al crear usuario."}
+
 
 def verificar_usuario(db: Session, email: str, contrasena: str, user: str):
 

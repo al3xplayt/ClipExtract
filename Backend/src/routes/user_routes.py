@@ -10,14 +10,15 @@ user_bp = Blueprint('user', __name__)
 def registro():
     data = request.json
     db = SessionLocal()
-    usuario = crear_usuario(db, data["nombre"], data["surname"], data["email"], data["contrasena"], data["username"])
+    resultado = crear_usuario(db, data["nombre"], data["surname"], data["email"], data["contrasena"], data["username"])
     db.close()
     
-    if usuario.get("message"):
-        print(f"Error al crear usuario: {usuario['message']}")
-        return jsonify({"success": False}), 409  # Conflicto, ya registrado
+    if not resultado["success"]:
+        print(f"Error al crear usuario: {resultado['message']}")
+        return jsonify({"success": False, "message": resultado["message"]}), 409
 
-    return jsonify({"success": True}), 201  # Creado correctamente
+    return jsonify({"success": True}), 201
+
 
 @user_bp.route("/login", methods=["POST"])
 def login():

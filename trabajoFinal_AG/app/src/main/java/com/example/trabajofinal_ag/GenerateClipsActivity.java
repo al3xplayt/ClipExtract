@@ -166,7 +166,7 @@ public class GenerateClipsActivity extends AppCompatActivity {
                         e.printStackTrace();
                         String erroLog = "error";
                         try {
-                             erroLog = response.getString("message");
+                            erroLog = response.getString("message");
                         } catch (JSONException ex) {
                             throw new RuntimeException(ex);
                         }

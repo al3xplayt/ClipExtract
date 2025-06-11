@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from app.models.models import *
+from srcmodels.models import *
 from sqlalchemy.exc import SQLAlchemyError
 
 

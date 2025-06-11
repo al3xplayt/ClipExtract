@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 
-from app.config import UPLOAD_FOLDER
+from src.config import UPLOAD_FOLDER
 import os
 
 upload_bp = Blueprint('upload_bp', __name__)

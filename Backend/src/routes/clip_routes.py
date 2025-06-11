@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify, send_file, stream_with_context, Response
-from app.utils.video_processing import detect_scene_changes
-from app.config import UPLOAD_FOLDER, TEMP_CLIPS_DIR as TEM  
+from src.utils.video_processing import detect_scene_changes
+from src.config import UPLOAD_FOLDER, TEMP_CLIPS_DIR as TEM  
 import os, subprocess
-from app.database import SessionLocal
-from app.models.models import Video
+from src.database import SessionLocal
+from src.models.models import Video
 clip_bp = Blueprint("clip_bp", __name__)
 
 

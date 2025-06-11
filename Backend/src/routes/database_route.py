@@ -1,7 +1,7 @@
 # main.py
 from flask import Blueprint, request, jsonify
-from app.database import SessionLocal
-from app.services.database_services import *
+from src.database import SessionLocal
+from src.services.database_services import *
 
 database_bp = Blueprint('database', __name__)
 

@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify, send_file
 from pathlib import Path
-from app.services.download_service import download_video
+from src.services.download_service import download_video
 import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-from app.services.download_service import schedule_delete
+from src.services.download_service import schedule_delete
 
 
 download_bp = Blueprint('download', __name__)

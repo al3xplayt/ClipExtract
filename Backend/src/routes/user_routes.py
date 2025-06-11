@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
-from app.database import SessionLocal
-from app.services.user_service import *
-from app.utils.query_utils import get_user
+from src.database import SessionLocal
+from src.services.user_service import *
+from src.utils.query_utils import get_user
 import json
 user_bp = Blueprint('user', __name__)
 

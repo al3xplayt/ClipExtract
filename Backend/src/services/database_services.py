@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from app.models.models import *
+from src.models.models import *
 from sqlalchemy.exc import SQLAlchemyError
-from app.config import UPLOAD_FOLDER
+from src.config import UPLOAD_FOLDER
 import json, os
 
 def subir_descarga(db: Session, video_url: str, filename: str, user: str, formato: str):

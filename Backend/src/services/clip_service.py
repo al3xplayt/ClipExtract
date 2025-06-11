@@ -1,8 +1,8 @@
 # App/services/clip_service.py
 
 import os
-from app.utils.video_processing import detect_scene_changes
-from app.config import UPLOAD_FOLDER
+from src.utils.video_processing import detect_scene_changes
+from src.config import UPLOAD_FOLDER
 
 def process_uploaded_video(file_storage):
     filename = file_storage.filename

@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, TIMESTAMP, text, ForeignKey, Float, Text, DOUBLE_PRECISION
-from app.database import Base
+from src.database import Base
 
 class Usuario(Base):
     __tablename__ = 'usuarios'

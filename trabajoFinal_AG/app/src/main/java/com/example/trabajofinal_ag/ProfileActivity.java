@@ -136,18 +136,30 @@ public class ProfileActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                final String respBody = response.body().string();
+                String respBody = response.body().string();
+                String errorMessage = "";
 
+                if (!response.isSuccessful()) {
+                    try {
+                        JSONObject responseJson = new JSONObject(respBody);
+                        errorMessage = responseJson.optString("message", "Error desconocido");
+                    } catch (JSONException e) {
+                        errorMessage = "Error desconocido al parsear respuesta";
+                    }
+                }
+
+                String finalErrorMessage = errorMessage;
                 runOnUiThread(() -> {
                     if (response.isSuccessful()) {
                         prefs.edit().putString("user_name", NewuserName).apply();
                         Toast.makeText(ProfileActivity.this, "Perfil actualizado correctamente", Toast.LENGTH_SHORT).show();
                         finish();
                     } else {
-                        Toast.makeText(ProfileActivity.this, "Error al actualizar: " + respBody, Toast.LENGTH_LONG).show();
+                        Toast.makeText(ProfileActivity.this, "Error al actualizar: " + finalErrorMessage, Toast.LENGTH_LONG).show();
                     }
                 });
             }
+
         });
     }
 }

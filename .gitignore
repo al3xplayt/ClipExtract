@@ -1,4 +1,12 @@
-.\Backend\env_clipExtractor\*
-.\env
-.\Backend\data\*
-.\Backend\config\*
+Backend\env_clipExtractor\*
+.env
+Backend\data\*
+Backend\config\*
+*Backend\__pycache__\*
+*.pyc 
+Backend\app\routes\__pycache__\*
+Backend\app\utils\__pycache__\*
+Backend\app\models\__pycache__\*
+Backend\app\__pycache__\*
+Backend\app\routes\database_routes_backup.txt
+Backend\app\services\__pycache__\*

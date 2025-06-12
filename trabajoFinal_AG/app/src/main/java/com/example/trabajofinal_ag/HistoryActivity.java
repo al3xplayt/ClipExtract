@@ -24,7 +24,6 @@ import java.util.List;
 
 import Api.ApiCallback;
 import Api.ApiUtils;
-import Models.ClipHistory;
 import Models.DownloadHistory;
 import Adapters.HistoryAdapter;
 

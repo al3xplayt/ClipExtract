@@ -66,17 +66,20 @@ def update_user_profile():
 
     if 'user_name' in data:
         user.user = data['user_name']
+        if user == get_user(db, data['user_name']):
+            db.close()
+
+            return jsonify({'msg': 'El nombre de usuario ya está en uso'}), 409
     if 'email' in data:
         user.email = data['email']
 
-    # Aquí validar campos, lógica extra si quieres
 
     try:
         db.commit()
     except Exception as e:
         db.rollback()
         db.close()
-        return jsonify({'msg': 'Error al guardar', 'error': str(e)}), 500
+        return jsonify({'message': 'Usuario en uso', 'error': str(e)}), 500
 
     db.close()
     return jsonify({'msg': 'Perfil actualizado correctamente'})

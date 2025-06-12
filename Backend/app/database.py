@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 db_url = os.getenv("DATABASE_URL")
+
+# Db url kubernetes:
+# db_url = "postgresql+psycopg2://admin:admin@localhost:5432/ClipExtract"  # For local development
 engine = create_engine(db_url)
 
 # Crear sesión local

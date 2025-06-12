@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 
 from app.config import UPLOAD_FOLDER
+from app.utils.file_remover import schedule_delete
 import os
 
 upload_bp = Blueprint('upload_bp', __name__)
@@ -30,6 +31,7 @@ def upload_file():
     file_path = os.path.join(UPLOAD_FOLDER, filename)
     file.save(file_path)
 
+    schedule_delete(file_path)  # Programar eliminación del archivo
     return jsonify({
         "message": "Archivo subido exitosamente",
         "filename": filename

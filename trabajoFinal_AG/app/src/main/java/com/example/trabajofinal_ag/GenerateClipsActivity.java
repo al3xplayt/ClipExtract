@@ -162,6 +162,7 @@ public class GenerateClipsActivity extends AppCompatActivity {
                         recyclerView.setAdapter(clipAdapter);
                         recyclerView.setVisibility(VISIBLE);
                         preview.setVisibility(GONE);
+                        extractClipsButton.setVisibility(GONE);
                     } catch (JSONException e) {
                         e.printStackTrace();
                         String erroLog = "error";
@@ -201,6 +202,9 @@ public class GenerateClipsActivity extends AppCompatActivity {
             if (file != null) {
                 recyclerView.setVisibility(GONE); // Oculta los clips anteriores
                 if (preview != null) preview.setVisibility(VISIBLE); // Muestra el thumbnail
+                if (extractClipsButton != null) {
+                    extractClipsButton.setVisibility(VISIBLE); // Deshabilita el botón de extracción
+                }
                 showVideoThumbnail(file);
                 uploadedFile = file;
                 uploadFile(file);

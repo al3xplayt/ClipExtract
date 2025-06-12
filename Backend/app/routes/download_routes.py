@@ -29,9 +29,9 @@ def download_page():
                 type = 'audio/mpeg' if formato == 'mp3' else 'video/mp4'
                 return send_file(file, as_attachment=True, download_name=filename, mimetype=type)
             else:
-                return "No se pudo procesar el archivo.", 500
+                return "No se pudo procesar el archivo.", 501
         except Exception as e:
-            return str(e), 500
+            return str(e), 505
 
 @download_bp.route('/delete_file', methods=['POST'])
 def delete():

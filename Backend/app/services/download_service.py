@@ -19,7 +19,6 @@ def sanitize_filename(filename):
 def download_video(url, formato):
     try:
         # Definir opciones para yt-dlp según el formato
-        print("\na")
         if formato == 'mp3':
             ydl_opts = {
                 'format': 'bestaudio/best',
@@ -32,10 +31,8 @@ def download_video(url, formato):
                 'outtmpl': os.path.join(TEMP_FILES_DIR, '%(title)s.%(ext)s'),
                 'noplaylist': True,
             }
-        print("\nb")
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
-        print("\c")
         # Buscar el archivo descargado
         filename = None
         for file in os.listdir(TEMP_FILES_DIR):
@@ -45,14 +42,12 @@ def download_video(url, formato):
             elif formato == 'mp4' and file.endswith('.mp4'):
                 filename = os.path.join(TEMP_FILES_DIR, file)
                 break
-        print("d")
         if not filename:
             raise Exception("No se encontró un archivo descargado.")
 
         # Si es MP3, convertirlo
         if formato == 'mp3':
             mp3_file = os.path.join(TEMP_FILES_DIR, f"{os.path.splitext(os.path.basename(filename))[0]}.mp3")
-            print("e")
             try:
                 ffmpeg.input(filename).output(mp3_file, audio_bitrate='192k').run(overwrite_output=True)
                 os.remove(filename)
@@ -64,7 +59,6 @@ def download_video(url, formato):
             return filename  # Retornar el archivo MP4 directamente
 
     except Exception as e:
-        print(e)
         raise e
 
 

@@ -26,24 +26,20 @@ def download_page():
             if file_path and os.path.exists(file_path):
                 file = Path("data/temp_files") / os.path.basename(file_path)
                 filename = os.path.basename(file_path)  # Nombre del archivo descargado
-
-                return send_file(file, as_attachment=True, download_name=filename, mimetype='audio/mpeg')
+                type = 'audio/mpeg' if formato == 'mp3' else 'video/mp4'
+                return send_file(file, as_attachment=True, download_name=filename, mimetype=type)
             else:
-                return "No se pudo procesar el archivo.", 500
+                return "No se pudo procesar el archivo.", 501
         except Exception as e:
-            return str(e), 500
+            print("Error en la descarga:", e)
+            return f"Lamentablemente ocurrio un error: {str(e)}", 505
 
 @download_bp.route('/delete_file', methods=['POST'])
 def delete():
     data = request.get_json()
-    print("aaaaaaa")
     file_name = data.get('file_name')
-    print(f"Recibido para eliminar: {file_name}")
     if not file_name:
-        print("No se proporcionó nombre de archivo")
         return jsonify({"error": "No se proporcionó nombre de archivo"}), 400
-    print(f"Programando eliminación de: {file_name}")
     schedule_delete(file_name)
     return jsonify({"message": f"Archivo '{file_name}' programado para eliminación"}), 200
 
-    

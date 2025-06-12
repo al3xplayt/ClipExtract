@@ -20,70 +20,70 @@
 
     <!-- Input URL o subir archivo -->
 
-    <EditText
+
+    <TextView
         android:id="@+id/videoUrl"
-        android:layout_width="0dp"
+        android:layout_width="323dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="21dp"
         android:hint="Pega enlace o selecciona archivo"
-        android:inputType="textUri"
-        app:layout_constraintEnd_toStartOf="@+id/uploadButton"
-        app:layout_constraintHorizontal_bias="0.0"
+        android:text="@string/subrayado"
+        android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/clip_title" />
+        app:layout_constraintTop_toBottomOf="@+id/clip_title" />
 
     <ImageView
         android:id="@+id/uploadButton"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_marginEnd="16dp"
         android:contentDescription="Subir archivo"
         android:src="@drawable/ic_upload"
-        app:layout_constraintBottom_toBottomOf="@id/videoUrl"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/videoUrl"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintBottom_toBottomOf="@+id/videoUrl"
+        app:layout_constraintStart_toEndOf="@+id/videoUrl"
+        app:layout_constraintTop_toTopOf="@+id/videoUrl" />
 
     <ImageView
         android:id="@+id/previewThumbnail"
-        android:layout_width="0dp"
+        android:layout_width="379dp"
         android:layout_height="180dp"
-        android:layout_margin="16dp"
+        android:layout_marginTop="32dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/placeholder_video"
+        android:src="@android:color/transparent"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/videoUrl" />
+        app:layout_constraintTop_toBottomOf="@+id/extractClip"
+        tools:visibility="visible" />
 
     <Button
         android:id="@+id/extractClip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="86dp"
-        android:layout_marginBottom="250dp"
+        android:layout_marginStart="144dp"
+        android:layout_marginTop="36dp"
         android:backgroundTint="@color/primaryColor"
         android:text="Extraer Clip"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/previewThumbnail"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintTop_toBottomOf="@+id/videoUrl" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="411dp"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        app:itemIconTint="@color/selector_bottom_nav"
-        app:itemTextColor="@color/selector_bottom_nav"
-        app:labelVisibilityMode="labeled"
+    <include layout="@layout/bottom_nav" />
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/clipRecyclerView"
+        android:layout_width="389dp"
+        android:layout_height="538dp"
+        android:layout_marginTop="7dp"
+        android:layout_marginBottom="91dp"
+        android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/bottom_nav_menu" />
+        app:layout_constraintTop_toBottomOf="@+id/extractClip"
+        app:layout_constraintVertical_bias="0.0"
+        tools:visibility="visible" />
 
     <ProgressBar
         android:id="@+id/uploadProgress"

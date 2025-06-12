@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clipextract-backend
+  namespace: clipextract-backend
+  labels:
+    app: clipextract-backend
+    role: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clipextract-backend
+  template:
+    metadata:
+      labels:
+        app: clipextract-backend
+    spec:
+      containers:
+        - name: clipextract-backend
+          image: registry.gitlab.com/al3xplayt-group/clipextract:c6fa4458
+          ports:
+            - containerPort: 50010
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: clipextract-backend-secrets
+                  key: DATABASE_URL
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      imagePullSecrets:
+        - name: gitlab-registry
+        

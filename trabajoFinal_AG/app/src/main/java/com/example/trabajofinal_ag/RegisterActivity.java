@@ -3,6 +3,7 @@ package com.example.trabajofinal_ag;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
@@ -84,7 +85,9 @@ public class RegisterActivity extends AppCompatActivity {
                                 Toast.makeText(RegisterActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
                                 finish();
                             } else{
-                                Toast.makeText(RegisterActivity.this, "Ya existe un usuario con ese nombre", Toast.LENGTH_SHORT).show();
+                                String errorMessage = response.getString("message");
+                                Log.e("RegisterActivity", "Error de registro: " + errorMessage);
+                                Toast.makeText(RegisterActivity.this, errorMessage , Toast.LENGTH_SHORT).show();
                             }
 
                         } catch (Exception e) {
@@ -96,6 +99,7 @@ public class RegisterActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Exception e) {
+                    String errorMessage = e.getMessage();
                     runOnUiThread(() -> Toast.makeText(RegisterActivity.this, "Error de red", Toast.LENGTH_SHORT).show());
                 }
             });

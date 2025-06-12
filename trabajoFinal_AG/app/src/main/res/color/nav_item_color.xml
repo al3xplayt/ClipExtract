@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Color para el ítem seleccionado -->
+    <item android:color="#D32F2F" android:state_checked="true" /> <!-- rojo fuerte -->
+    <!-- Color para ítems no seleccionados -->
+    <item android:color="#EFB6B6" /> <!-- gris claro -->
+</selector>

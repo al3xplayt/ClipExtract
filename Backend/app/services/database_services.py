@@ -1,52 +1,9 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.models.models import *
-from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import SQLAlchemyError
-
-def crear_usuario(db: Session, nombre: str, apellido: str, email: str, contrasena: str, user: str):
-    try:
-        # Verifica si ya existe el usuario
-        usuario_existente = db.query(Usuario).filter(
-            or_(Usuario.email == email, Usuario.user == user)
-        ).first()
-        if usuario_existente:
-            return {"error": "Ya existe un usuario con ese email o nombre de usuario."} 
-
-        hash_pass = generate_password_hash(contrasena)
-
-        nuevo_usuario = Usuario(nombre=nombre,apellidos=apellido, email=email, contrasena=hash_pass, user=user)
-        db.add(nuevo_usuario)
-        db.commit()
-        db.refresh(nuevo_usuario)
-
-        return nuevo_usuario
-    except SQLAlchemyError as e:
-        db.rollback()  # Hacer rollback en caso de error en la base de datos
-        print(f"Error al crear usuario: {str(e)}")
-        return {"error": "Error en la base de datos al crear usuario."}  # Error general de base de datos
-
-
-def verificar_usuario(db: Session, email: str, contrasena: str, user: str):
-    try:
-        # Consultar el usuario
-        usuario = db.query(Usuario).filter(
-            or_(Usuario.email == email, Usuario.user == user)
-        ).first()
-        if not usuario:
-            print("-"*20)
-            print(type(usuario))
-            print("-"*20)
-            return {"success": False, "message": "Usuario no encontrado.", "usuario" : usuario}  # Usuario no existe
-
-        # Verificar la contraseña
-        if not check_password_hash(usuario.contrasena, contrasena):
-            return {"success": False, "message": "Contraseña incorrecta.", "usuario" : usuario}  # Contraseña incorrecta
-
-        return {"success": True, "message": f"Bienvenido {usuario.user}", "usuario": usuario}
-    except SQLAlchemyError as e:
-        print(f"Error al verificar usuario: {str(e)}")
-        return {"success":False,"message": "Error en la base de datos al verificar usuario."}  # Error general de base de datos
+from app.config import UPLOAD_FOLDER
+import json, os
 
 def subir_descarga(db: Session, video_url: str, filename: str, user: str, formato: str):
     try:
@@ -77,3 +34,55 @@ def subir_descarga(db: Session, video_url: str, filename: str, user: str, format
         print(f"Error al subir descarga: {str(e)}")
         return {"success": False,"error": "Error en la base de datos al subir descarga."}  # Error general de base de datos
     
+def registrar_subida(db: Session, data: json):
+    user_id = data.get("user_id")
+    filename = data.get("filename")
+    path = UPLOAD_FOLDER + filename
+    status = data.get("status", "pending")  
+    try:
+        # Verificar si el usuario existe
+        usuario = db.query(Usuario).filter(Usuario.id == user_id).first()
+        if not usuario:
+            print(f"Usuario con ID {user_id} no encontrado.")
+            return None  # Usuario no encontrado
+        nuevo_video = Video(filename=filename, path=path, status=status, user_id=user_id)
+        db.add(nuevo_video)
+        db.commit()
+        db.refresh(nuevo_video)
+        return nuevo_video
+    except SQLAlchemyError as e:
+        db.rollback()  # Hacer rollback en caso de error en la base de datos
+        print(f"Error al registrar subida: {str(e)}")
+        return None  # Error general de base de datos
+    
+def registrar_clip(db: Session, data: json):
+    try:
+        video_filename = data.get("filename")
+        print(f"Registrando clip para video: {video_filename}")
+        video = db.query(Video).filter(Video.filename == video_filename).first()
+        if not video:
+            print(f"Video no encontrado con filename: {video_filename}")
+            return None  # Video no encontrado
+
+        start_time = data.get("start_time")
+        end_time = data.get("end_time")
+        clip_path = os.path.join(UPLOAD_FOLDER, f"clip_{video_filename}_{start_time}_{end_time}.mp4")
+        userName = data.get("username")
+        user = db.query(Usuario).filter(Usuario.user == userName).first()
+
+        nuevo_clip = Clip(
+            video_id=video.id,
+            start_time=start_time,
+            end_time=end_time,
+            clip_path=clip_path,
+            user_id=user.id
+        )
+        db.add(nuevo_clip)
+        db.commit()
+        db.refresh(nuevo_clip)
+        return nuevo_clip
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        print(f"Error al registrar clip: {str(e)}")
+        return None

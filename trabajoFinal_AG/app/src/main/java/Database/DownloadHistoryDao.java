@@ -7,6 +7,8 @@ import androidx.room.Query;
 
 import java.util.List;
 
+import Models.DownloadHistory;
+
 @Dao
 public interface DownloadHistoryDao {
 

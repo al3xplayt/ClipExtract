@@ -5,4 +5,5 @@
     <color name="secondaryColor">#03DAC5</color>
     <color name="footer">#66373636</color>
     <color name="selector_bottom_nav">#370202</color>
+    <color name="purple_500">#6200EE</color>
 </resources>

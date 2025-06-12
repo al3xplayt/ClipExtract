@@ -21,9 +21,12 @@ def download_page():
             return "No se proporcionó un enlace válido", 400
 
         try:
+            print("0")
             file_path = download_video(url, formato)
+            print("1")
             print(file_path)
             if file_path and os.path.exists(file_path):
+                print("2")
                 file = Path("data/temp_files") / os.path.basename(file_path)
                 filename = os.path.basename(file_path)  # Nombre del archivo descargado
                 type = 'audio/mpeg' if formato == 'mp3' else 'video/mp4'
@@ -31,7 +34,8 @@ def download_page():
             else:
                 return "No se pudo procesar el archivo.", 501
         except Exception as e:
-            return str(e), 505
+            print("Error en la descarga:", e)
+            return f"Lamentablemente ocurrio un error: {str(e)}", 505
 
 @download_bp.route('/delete_file', methods=['POST'])
 def delete():

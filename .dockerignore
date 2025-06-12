@@ -1,0 +1,25 @@
+# Entornos virtuales (muy importante excluirlo)
+*env_clipextract/
+
+# Kubernetes deployments, YAMLs y configs
+deployment_kubernetes/
+config/
+
+# Archivos de datos, subidas y temporales (que no necesitas en la imagen)
+data/
+
+# Ficheros de Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs y archivos temporales
+*.log
+*.tmp
+
+# Archivos ocultos y sensibles
+.env
+
+
+
+

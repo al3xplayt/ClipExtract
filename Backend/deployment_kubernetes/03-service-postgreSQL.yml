@@ -1,11 +1,11 @@
 apiVersion: v1
-kind: service
+kind: Service
 metadata:
-  name: svc-PostgreSQL
-  namespace: clipExtract-backend
+  name: svc-postgresql
+  namespace: clipextract-backend
 spec:
   selector:
-    app: clipextract-backend
+    app: clipextract-postgresql
   ports:
     - protocol: TCP
       port: 5432

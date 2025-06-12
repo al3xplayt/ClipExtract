@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: init-db-script
+    namespace: clipextract-backend
+data:
+    init.sql: |
+        CREATE TABLE IF NOT EXISTS public.usuarios (
+            id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            nombre character varying(100) NOT NULL,
+            email character varying(100) NOT NULL,
+            contrasena character varying(255) NOT NULL,
+            fecha_creacion timestamp DEFAULT CURRENT_TIMESTAMP,
+            fecha_actualizacion timestamp DEFAULT CURRENT_TIMESTAMP,
+            "user" character varying(36),
+            apellidos character varying(100),
+            CONSTRAINT usuario_usrname_key UNIQUE ("user"),
+            CONSTRAINT usuarios_email_key UNIQUE (email),
+            CONSTRAINT email_format CHECK (email ~* '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+        );
+
+        ALTER TABLE IF EXISTS public.usuarios OWNER TO postgres;
+
+        CREATE TABLE IF NOT EXISTS public.videos (
+            id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            filename text NOT NULL,
+            upload_time timestamp DEFAULT now(),
+            status text NOT NULL DEFAULT 'pending',
+            path text NOT NULL,
+            user_id integer NOT NULL,
+            CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES public.usuarios (id)
+        );
+
+        ALTER TABLE IF EXISTS public.videos OWNER TO postgres;
+
+        CREATE TABLE IF NOT EXISTS public.clips (
+            id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            video_id integer NOT NULL,
+            start_time double precision NOT NULL,
+            end_time double precision NOT NULL,
+            clip_path text NOT NULL,
+            created_at timestamp DEFAULT now(),
+            user_id integer NOT NULL,
+            CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES public.usuarios (id) ON DELETE CASCADE,
+            CONSTRAINT fk_video FOREIGN KEY (video_id) REFERENCES public.videos (id) ON DELETE CASCADE
+        );
+
+        ALTER TABLE IF EXISTS public.clips OWNER TO postgres;
+
+        CREATE TABLE IF NOT EXISTS public.historial_descargas (
+            id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            usuario_id integer,
+            video_url character varying(252) NOT NULL,
+            fecha_descarga timestamp DEFAULT CURRENT_TIMESTAMP,
+            filename character varying(250) NOT NULL,
+            formato character(3) NOT NULL,
+            CONSTRAINT user_id_fk FOREIGN KEY (usuario_id) REFERENCES public.usuarios (id) NOT VALID
+        );
+
+        ALTER TABLE IF EXISTS public.historial_descargas OWNER TO postgres;
+
+

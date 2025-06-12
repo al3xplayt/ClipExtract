@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: clipextract-backend
-  namespace: clipExtract-backend
+  namespace: clipextract-backend
   labels:
     app: clipextract-backend
     role: backend
@@ -18,12 +18,15 @@ spec:
     spec:
       containers:
         - name: clipextract-backend
-          image: registry.gitlab.com/al3xplayt-group/clipextract:504d66de
+          image: registry.gitlab.com/al3xplayt-group/clipextract:c6fa4458
           ports:
             - containerPort: 50010
           env:
             - name: DATABASE_URL
-              value: "postgresql://postgres:admin@svc-PostgreSQL:5432/clipextract_db"
+              valueFrom:
+                secretKeyRef:
+                  name: clipextract-backend-secrets
+                  key: DATABASE_URL
           resources:
             requests:
               memory: "256Mi"

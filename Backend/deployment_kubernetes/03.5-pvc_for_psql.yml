@@ -1,12 +1,28 @@
+# PersistentVolume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgresql-pv
+spec:
+  capacity:
+    storage: 10Gi                  # Igual que PVC
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: standard       # Coincide con PVC
+  hostPath:
+    path: "/mnt/data/postgresql"
+---
+# PersistentVolumeClaim
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: postgresql-pvc
-  namespace: clipExtract-backend
+  namespace: clipextract-backend
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 10Gi
-  storageClassName: standard   # Cambia esto si usas otro StorageClass
+  storageClassName: standard

@@ -19,6 +19,7 @@ def sanitize_filename(filename):
 def download_video(url, formato):
     try:
         # Definir opciones para yt-dlp según el formato
+        print(formato)
         if formato == 'mp3':
             ydl_opts = {
                 'format': 'bestaudio/best',
@@ -27,7 +28,7 @@ def download_video(url, formato):
             }
         else:  # Descargar como MP4
             ydl_opts = {
-                'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]',
+                'format': 'bestvideo+bestaudio/best',
                 'outtmpl': os.path.join(TEMP_FILES_DIR, '%(title)s.%(ext)s'),
                 'noplaylist': True,
             }

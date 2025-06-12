@@ -7,7 +7,7 @@ metadata:
     app: clipextract-backend
     role: backend
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: clipextract-backend
@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: clipextract-backend
-          image: registry.gitlab.com/al3xplayt-group/clipextract:c6fa4458
+          image: registry.gitlab.com/al3xplayt-group/clipextract:latest
           ports:
             - containerPort: 50010
           env:
@@ -32,8 +32,8 @@ spec:
               memory: "256Mi"
               cpu: "250m"
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "1512Mi"
+              cpu: "1500m"
       imagePullSecrets:
         - name: gitlab-registry
         

@@ -28,6 +28,7 @@ def download_video(url, formato):
             }
         else:  # Descargar como MP4
             ydl_opts = {
+                #Formato mas compatible
                 'format': 'bestvideo+bestaudio/best',
                 'outtmpl': os.path.join(TEMP_FILES_DIR, '%(title)s.%(ext)s'),
                 'noplaylist': True,
